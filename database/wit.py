@@ -11,8 +11,8 @@ def understand_string(message_text):
 	resp = urllib2.urlopen(rq)
 	if resp.getcode() == 200:  # means success
 		msg = resp.read()
-    	return json.loads(msg)
-	else:  # not successful
+		return json.loads(msg)
+	else:
 		print('Request to Wit failed for message:', message_text)
 		print('Status code:', resp.getcode())  # print the code
 		return {}
