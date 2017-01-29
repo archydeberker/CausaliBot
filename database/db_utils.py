@@ -9,9 +9,7 @@ import datetime
 from bson.objectid import ObjectId # to be able to query _id in mongo
 import numpy as np
 import hashlib
-import mail.email_defs as email_defs
 import pandas as pd
-import gviz_api
 from itertools import groupby
 import pytz
 
@@ -52,132 +50,13 @@ def close_connection(client):
 	client.close()
 
 
-def store_user(first_name, second_name,messenger_id, timezone='Europe/London'):
-	""" Store user info in a collection. 
-	As I understand it you don't have to sanitise inputs in MongoDB unless you're concatenating strings.
-	Instead of using the has we can use the objectID in the mongoDB database, which is unique. 
-	HOWEVER, IT MIGHT BE EASY TO PREDICT WHAT OTHER OBJECT IDS LOOK LIKE BASED ON YOUR OWN, so
-	should probably start using a random string at some point. 
-	
-	Input:
-		first_name 					string
-		second_name 				string
-		messenger_id				string
-	Returns:
-		result 		contains unique id of user as insert_results.inserted_id
-	"""
-	
-	client, db, collection = open_connection(collectionName='users')
-	# write the user info to the database
-	result = collection.insert_one({
-		'first_name': name,
-		'second_name': name,
-		'messenger_id': email,
-		'created_at': datetime.datetime.utcnow(),
-		'last_modified': datetime.datetime.utcnow(),
-		'timezone': timezone,
-		'first_name': name.partition(' ')[0], # get the first part of the name until a space (or whole thing if no space)
-		'subscribed': True  # whether the user is active/subscribed
-		})
-
-
-	return result
-
-
-def register_user_experiment(name, email, timezone, exp_name, condition1, nTrials1, condition2, nTrials2, dependents, ITI, instruction_time, response_time):
-	"""First point of contact after user designs a custom experiment.
-
-	Initialises the user, experiment, trials. Inputs come from welcome_custom_exp.php and
-	index_full_exp.html
-
-	Returns
-		success 			if things go wrong at any point (not valid email, or anything else), returns a False so we can let user know it didn't work
-	"""
-	print("Storing user experiment...")
-	print(exp_name)
-	# input checking and default settings
-	if (not name) or (not email):
-		return False
-	if not timezone:
-		timezone = 0
-	else: # convert to int
-		timezone = int(timezone)
-	if not exp_name:
-		exp_name = 'My Experiment'
-	# store conditions, either default or user provided
-	conditions = []
-	if not condition1:
-		conditions.append('condition1')
-	else:
-		conditions.append(condition1)
-	if not condition2:
-		conditions.append('condition2')
-	else:
-		conditions.append(condition2)
-	# store nTrials
-	nTrials = []
-	if not nTrials1:
-		nTrials.append(10)
-	else:
-		nTrials.append(int(nTrials1))
-	if not nTrials2:
-		nTrials.append(10)
-	else:
-		nTrials.append(int(nTrials2))
-	if not dependents:
-		dependents = ['happiness']
-	if not ITI:
-		ITI = 24
-	else:
-		ITI = int(ITI)
-	if not instruction_time:
-		instruction_time = 7
-	else:
-		instruction_time = int(instruction_time)
-	if not response_time:
-		response_time = 15
-	else:
-		response_time = int(response_time)
-
-	user = store_user(name, email, timezone)
-	exp = store_experiment(exp_name, conditions, dependents, nTrials, instruction_time, response_time, ITI)
-	init_trials(str(user.inserted_id), str(exp.inserted_id))
-	print("Successfully registered user, stored experiment, and initiated trials.")
-	sys.stdout.flush()
-	return True
-
-
-def store_experiment(exp_name=['My Experiment'], conditions=['condition1', 'condition2'], dependents=['happiness'], nTrials=[10, 10], instruction_prompt=7, response_prompt=15, ITI=24, randomise='max3'):
-	"""Store a custom experiment.
-
-	See default values for format of input.
-
-	"""
-	# open a new connection
-	client, db, collection = open_connection(collectionName='experiments')
-	# fill with single experiment. Does not check for unique name 
-	insert_result = collection.insert_one({
-		'name': exp_name,
-		'conditions': conditions,
-		'dependent_vars': dependents,
-		'nTrials': nTrials,
-		'instruction_prompt': instruction_prompt, #time of day in hours between 0 and 24
-		'response_prompt': response_prompt, #time of day in hours between 0 and 24
-		'ITI': ITI, # set the ITI between trials in hours
-		'randomise': randomise, #how to randomise; see init_trials() for implementation
-		'created_at': datetime.datetime.utcnow(),
-		'last_modified': datetime.datetime.utcnow(),
-	})
-	return insert_result
-
-
-def init_trials(user_id, experiment_id):
+def init_trials(fb_id, experiment_id):
 	""" Initialises all the trials for an experiment for a user, reading a document in the 'experiments' database and populating the 'trials' collection.
 
 	This assumes that the experiment already exists in the database, and simply reads out the experiments and makes sure all reminders are set, timezones are corrected for,
 	and order of conditions is randomised
 	Inputs
-		user_id 		string, not an ObjectId
+		fb_id 		string, FACEBOOK id
 		experiment_id 	string, not an ObjectId
 
 	Returns
@@ -189,7 +68,7 @@ def init_trials(user_id, experiment_id):
 	# get information about the experiment and store it into the variable
 	exp = experiments_coll.find_one({"_id": ObjectId(experiment_id)})
 	# get information about the user and store it into variable using next()
-	user = users_coll.find_one({"_id": ObjectId(user_id)})
+	user = users_coll.find_one({"fb_id": fb_id})
 	
 	# create an array of all the condition strings
 	condition_array = []
@@ -246,7 +125,7 @@ def init_trials(user_id, experiment_id):
 	insert_result = []
 	for ix, condition in enumerate(condition_array):
 		insert_result.append(db_handle['trials'].insert_one({
-			'user_id': user_id,
+			'fb_id': fb_id,
 			'experiment_id': experiment_id,
 			'trial_number': ix,
 			'condition': condition,
@@ -262,31 +141,6 @@ def init_trials(user_id, experiment_id):
 		}))
 	return insert_result
 
-
-def init_experiment_meditation(user, instructionTime='07:00', responseTime='16:00'):
-	""" Code to initialise the meditation experiment in the database. Helpful to identify what variables to store and how to name them
-	
-	Returns an instance of pymongo InsertOneResult, e.g. insert_result.inserted_id 
-	to get the ID of inserted document
-	"""
-	# open a new connection
-	client, db, collection = open_connection(collectionName='experiments')
-	# fill with single experiment. Does not check for unique name 
-	insert_result = collection.insert_one({
-		'name': 'meditation',
-		'conditions': ["meditate", "do not meditate"],
-		'dependent_vars': ["happiness"],
-		'nTrials': [10, 10],
-		'ITI': 24, # set the ITI between trials in hours
-		'randomise': 'max3', #how to randomise; see init_trials() for implementation
-		'user_id': user,
-		'instructionTimeLocal': instructionTime,  # store as string and only make into datetime when using it (mongo doesn't store properly)
-		'responseTimeLocal': responseTime,
-		'created_at': datetime.datetime.utcnow(),
-		'last_modified': datetime.datetime.utcnow(),
-	})
-	return insert_result
-	
 
 def get_uncompleted_instructions(include_past=True, include_future=False, sort='chronological', limit=0):
 	""" Looks at 'trials' database and return a list of uncompleted instructions 
@@ -409,7 +263,7 @@ def send_outstanding_response_prompts():
 	# at this stage there are outstanding response prompts
 	for prompt in outstanding:
 		# get the user
-		user = users_coll.find_one({'_id': ObjectId(prompt['user_id'])})
+		user = users_coll.find_one({'_id': ObjectId(prompt['fb_id'])})
 		result = email_defs.probe_meditation(trialHash=prompt['hash_sha256'], name=user['first_name'], email=user['email'])
 
 		# store that instruction is sent, set the time instruction was sent, and update last_modified
@@ -439,7 +293,7 @@ def send_outstanding_instructions():
 	# at this stage there are outstanding response prompts
 	for prompt in outstanding:
 		# get the user
-		user = users_coll.find_one({"_id": prompt['user_id']})
+		user = users_coll.find_one({"_id": prompt['fb_id']})
 		email_defs.instruct_meditation(name=user['first_name'], email=user['email'], condition=prompt['condition'])
 		# store in the trials collection that the instruction has been sent and exact datetime
 		trials_coll.update_one({"_id": prompt["_id"]}, {
@@ -451,7 +305,6 @@ def send_outstanding_instructions():
 				"last_modified": True
 			}
 		})
-
 
 
 def trials_completed(filter={}):
@@ -476,53 +329,6 @@ def trials_completed(filter={}):
 	query.update(filter)
 	# search and return the number of retrieved docs
 	return trials_collection.find(query).count()
-
-
-def get_results(experiment_id=[], user_id=[]):
-    """Updates every doc in the 'results' collection that fits the filter
-    
-    First finds all results that satisfy the filter, and then loops over them to update.
-    Filter might contain something like last_modified, a particular results _id, a user, experiment,
-    and so on. 
-
-    Input
-        results_filter         a filter passes directly to mongodb to select documents in the 'results' collection
-
-    """
-    client, db, trials_collection = open_connection(collectionName='trials')
-
-    # get all trials for this user and this experiment and put into a list
-    experiment_id = ObjectId('578bee08c209cf00a5b6e330')
-    user_id = ObjectId('578bee07c209cf00a5b6e32e')
-    trials = pd.DataFrame(list(trials_collection.find({
-        "experiment_id": experiment_id, 
-        "user_id": user_id
-    })))
-    # generate a list with as many np arrays as conditions (with non-NaN scores for that condition)
-    # This will make it easier to do things like std, mean, median, t-tests, f-tests
-    z = trials.groupby(by='condition')
-    zz = z['random_number'].mean()
-    table_description = {'condition': ('string', 'Condition'),
-                         'result': ('number', 'Happiness')}
-    pydic_data = [{'condition': 'Meditate', 'result': (zz[0], str(zz[0]))},
-                  {'condition': 'Not meditate', 'result': (zz[1], str(zz[1]))}]
-    g_datatable = gviz_api.DataTable(table_description)
-    g_datatable.LoadData(pydic_data)
-    
-    #return g_datatable.ToJSon(columns_order=('condition', 'result'),
-    #						  order_by='condition')
-    return g_datatable.ToJSon()
-    
-
-    # resultsZ.n_completed = int(np.sum(trials.response_given))
-    # resultsZ.proportion_complete = float(np.sum(trials.response_given)/len(trials.index))
-    # resultsZ.response_rate = float(np.sum(trials.response_given)/np.sum(trials.response_request_sent))
-    # resultsZ.mean_score = float(np.nanmean(trials.trialRating))
-    # resultsZ.mean_score_per_condition = [np.mean(cond) for cond in dat]
-    # resultsZ.std_score_per_condition = [np.std(cond) for cond in dat]
-    # resultsZ.median_score_per_condition = [np.median(cond) for cond in dat]
-    # resultsZ.scores_per_condition = [list(cond) for cond in dat]
-    # resultsZ.Cohen_effect_size_0_minus_1 = (np.mean(dat[0])-np.mean(dat[1])) / np.sqrt(((len(dat[0])-1)*np.var(dat[0]) + (len(dat[1])-1)*np.var(dat[1])) /    (len(dat[0])+len(dat[1])))
 
 
 def delete_user(_id):
@@ -580,10 +386,10 @@ def unsubscribe_user(email):
 		email_defs.alert_zap(info="User with email %s tried to unsubscribe but when looking for the user in our database, I couldn't find them. Maybe look for them manually before they get pissed off for receiving more emails." % email)
 		return(None)
 	# assume user was found. Could be multiple signups under the same email, so get all user ids
-	user_ids = [doc['_id'] for doc in user_docs]
+	fb_ids = [doc['fb__id'] for doc in user_docs]
 	# delete all trials associated with one of the user_ids, and have not had their response request sent
 	db['trials'].delete_many({
-		'user_id': {'$in': user_ids}, 
+		'fb_id': {'$in': fb_ids}, 
 		'response_request_sent': False
 	})
 
@@ -597,6 +403,136 @@ def unsubscribe_user(email):
 			'unsubscribe_date': True, 
 		}
 	})
+
+
+def fb_check_new_user(fb_id):
+	""" Check if user exists
+
+	user_id is a string that indicates the FACEBOOK user id
+	Returns logical
+	"""
+	_, _, coll = open_connection(collectionName='users')
+	return coll.find({'fb_id': user_id}).count() > 0 
+
+
+def fb_store_user(first_name, second_name, fb_id, timezone='Europe/London'):
+	""" Store user info in a collection. 
+	As I understand it you don't have to sanitise inputs in MongoDB unless you're concatenating strings.
+	Instead of using the has we can use the objectID in the mongoDB database, which is unique. 
+	HOWEVER, IT MIGHT BE EASY TO PREDICT WHAT OTHER OBJECT IDS LOOK LIKE BASED ON YOUR OWN, so
+	should probably start using a random string at some point. 
+	
+	Input:
+		first_name 					string
+		second_name 				string
+		fb_id						string
+	Returns:
+		result 		contains unique id of user as insert_results.inserted_id
+	"""
+	
+	client, db, collection = open_connection(collectionName='users')
+	# write the user info to the database
+	result = collection.insert_one({
+		'first_name': first_name,
+		'second_name': second_name,
+		'fb_id': fb_id,
+		'created_at': datetime.datetime.utcnow(),
+		'last_modified': datetime.datetime.utcnow(),
+		'timezone': timezone,
+		'subscribed': True  # whether the user is active/subscribed
+		})
+
+	return result
+
+
+def fb_delete_user(fb_id):
+	"""Delete a user
+	
+	Input
+		fb_id			string, will be converted to 
+
+	Returns
+		DeleteResult result (.deleted_count)
+	"""
+	_, _, coll = open_connection(collectionName='users')
+	return coll.delete_one({'fb_id': fb_id})
+
+
+def fb_init_experiment_meditation(fb_id, instructionTime=None, responseTime=None):
+	""" Code to initialise the meditation experiment in the database. Helpful to identify what variables to store and how to name them
+	
+	Returns an instance of pymongo InsertOneResult, e.g. insert_result.inserted_id 
+	to get the ID of inserted document
+	"""
+	# open a new connection
+	client, db, collection = open_connection(collectionName='experiments')
+	# fill with single experiment. Does not check for unique name 
+	insert_result = collection.insert_one({
+		'name': 'meditation',
+		'conditions': ["meditate", "do not meditate"],
+		'dependent_vars': ["happiness"],
+		'nTrials': [10, 10],
+		'ITI': 24, # set the ITI between trials in hours
+		'randomise': 'max3', #how to randomise; see init_trials() for implementation
+		'fb_id': fb_id,
+		'instructionTimeLocal': instructionTime,  # store as string and only make into datetime when using it (mongo doesn't store properly)
+		'responseTimeLocal': responseTime,
+		'created_at': datetime.datetime.utcnow(),
+		'last_modified': datetime.datetime.utcnow(),
+	})
+	return insert_result
+
+
+def fb_update_experiment_meditation(fb_id, key, value):
+	""" Update a user experiment with a new value
+	Initially written to support updates to instruction and response time
+
+	fb_id: string
+	key: string indicating the key to update
+	value: the new value
+	"""
+	_, _, collection = open_connection(collectionName='experiments')
+	return collection.update_one({'fb_id': fb_id}, {
+		'$set': {
+			key: value
+		},
+		"$currentDate": {
+			'last_modified': True
+		}
+	})
+
+
+def fb_check_experiment_setup(fb_id):
+	""" Check experiments for user and return what information is needed next
+
+	Input:
+		fb_id: string with user FB id
+	Returns:
+		string indicating what information is needed next. One of:
+			instructionTime
+			responseTime
+			chocksAway (everything is complete and ready to set up experiment)
+	"""
+
+	# check how many experiments the user has
+	_, _, collection = open_connection(collectionName='experiments')
+	user_exp = collection.find({"fb_id": fb_id})
+	# if >1, something is wrong, so delete all and start over
+	if user_exp.count() > 1:
+		collection.delete({"fb_id": fb_id})
+	# if 0, set up new experiment with null times
+	if user_exp.count() == 0:
+		fb_init_experiment_meditation(fb_id)
+
+	# user_exp may have changed to query again
+	user_exp = collection.find({"fb_id": fb_id})
+	if user_exp['instructionTimeLocal'] is None:
+		return 'instructionTime'
+	elif user_exp['responseTimeLocal'] is None:
+		return 'responseTime'
+	else
+		return 'chocksAway'
+
 
 
 
