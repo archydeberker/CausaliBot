@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import urllib2
 
 import requests
 from flask import Flask, request
@@ -40,6 +41,9 @@ def webhook():
                     message_text = messaging_event["message"]["text"]  # the message's text
 
                     send_message(sender_id, "hey dickhead" + sender_id)
+
+                    txt = urllib2.urlopen("https://graph.facebook.com/v2.6/"+sender_id+"?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token="+PAGE_ACCESS_TOKEN+").read()"
+                    send_message(txt) 
 
                 if messaging_event.get("delivery"):  # delivery confirmation
                     pass
