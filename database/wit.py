@@ -1,5 +1,8 @@
 # set of functions to interact with the Wit AI
 
+import json
+import urllib2
+
 def understand_string(message_text):
 	# send a string to wit and get structured info back.
 	# For list of headers see https://www.cs.tut.fi/~jkorpela/http.html
