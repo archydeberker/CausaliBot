@@ -3,7 +3,7 @@ import sys
 import json
 import urllib2
 from database import db_utils
-from dateime import strptime
+from datetime import strptime
 
 import requests
 from flask import Flask, request
