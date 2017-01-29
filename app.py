@@ -110,11 +110,13 @@ def get_next_info(sender_id,message_text):
 
     if action=='instructionTime': # need to get first timepoint
         # Try and get timepoint from current message
-        try:
-            timepoint = format_timepoint(message_text)
-            print(timepoint)
+        timepoint = format_timepoint(message_text)
+        print(timepoint)
+        if timepoint is not None:
+            send_message(sender_id, "Gotcha, "+str(timepoint))
             fb_update_experiment_meditation(sender_id, 'instructionTime', timepoint)
-        except:
+        else:
+            send_message(sender_id, "Sorry, I didn't quite understand that.")
             send_message(sender_id,"What time would you like your mediation prompt email? Enter a time in a 12 hour format along with AM or PM.")
     elif action=='responseTime':
         # Try and get timepoint from current message
@@ -123,7 +125,7 @@ def get_next_info(sender_id,message_text):
             print(timepoint)
             fb_update_experiment_meditation(sender_id, 'responseTime', timepoint)
         except:
-            send_message(sender_id,"What time would you like your mediation prompt email? Enter a time in a 12 hour format along with AM or PM.")
+            send_message(sender_id,"What time would you like your happiness prompt email? Enter a time in a 12 hour format along with AM or PM.")
     else:
         send_message(sender_id,"Great, we've got everything we need!")
 
@@ -135,17 +137,22 @@ def format_timepoint(message_text):
     inputs:     message_text (str)'''   
 
     rq = urllib2.Request('https://api.wit.ai/message?v=20170129&q='+message_text,headers={"Authorization": "Bearer FS4CJQVZGWFNJ525V5JJ7NVR5SWBDUIG"})
+
     log('composed request')
     rq.add_header('Content-Type', 'application/json')
-    msg = urllib2.urlopen(rq).read()
-    log('accessed witai')
-    msg_dict = json.loads(msg)
-    log('loaded')
-    timepoint = msg_dict['datetime']['values']
-    log('got dates from msg_dicts')
-    log(timepoint)
 
-    return timepoint
+    msg = urllib2.urlopen(rq).read()
+    msg_dict = json.loads(msg)
+
+    # check if the correct values are returned by 
+    if 'datetime' in msg_dict:
+        if 'values' in msg_dict['datetime']:
+            # extract time only so its a nice clean string ready to go into database TO BE IMPLEMENTED
+
+            return msg_dict['datetime']['values']
+    
+    # value not found, return None
+    return None
 
 
 if __name__ == '__main__':
