@@ -406,13 +406,13 @@ def unsubscribe_user(email):
 
 
 def fb_check_new_user(fb_id):
-	""" Check if user exists
+	""" Returns True if new, False if already exists
 
 	user_id is a string that indicates the FACEBOOK user id
 	Returns logical
 	"""
 	_, _, coll = open_connection(collectionName='users')
-	return coll.find({'fb_id': fb_id}).count() > 0 
+	return coll.find({'fb_id': fb_id}).count() == 0
 
 
 def fb_store_user(first_name, second_name, fb_id, timezone='Europe/London'):
