@@ -525,7 +525,7 @@ def fb_check_experiment_setup(fb_id):
 		fb_init_experiment_meditation(fb_id)
 
 	# user_exp may have changed to query again
-	user_exp = collection.find({"fb_id": fb_id})
+	user_exp = collection.find_one({"fb_id": fb_id})
 	if user_exp['instructionTimeLocal'] is None:
 		return 'instructionTime'
 	elif user_exp['responseTimeLocal'] is None:
