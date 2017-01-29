@@ -51,7 +51,7 @@ def webhook():
 
                     if new_user:
                         send_message(sender_id,'Hey ' + txt_dict['first_name'] + ' nice to meet you! Welcome to Causali!')
-                        db_utils.fb_store_user(txt_dict['first_name'],txt_dict['second_name'],sender_id,txt_dict['timezone'])
+                        db_utils.fb_store_user(txt_dict['first_name'],txt_dict['last_name'],sender_id,txt_dict['timezone'])
                         send_message(sender_id,"To setup your first experiment, type start experiment")
                     else:
                         get_next_info(sender_id,message_text)
