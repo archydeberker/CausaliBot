@@ -3,7 +3,7 @@ import sys
 import json
 import urllib2
 from database import db_utils
-
+from database import wit
 import requests
 from flask import Flask, request
 
