@@ -14,5 +14,5 @@ def understand_string(message_text):
     	return json.loads(msg)
 	else:  # not successful
 		print('Request to Wit failed for message:', message_text)
-		print(resp.getcode())  # print the code
+		print('Status code:', resp.getcode())  # print the code
 		return {}
