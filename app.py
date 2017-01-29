@@ -110,14 +110,14 @@ def get_next_info(sender_id,message_text):
 
     if action=='instructionTime': # need to get first timepoint
         # Try and get timepoint from current message
-        try:
-            timepoint = format_timepoint(message_text)
-            print(timepoint)
-            if timepoint is not None:
-                fb_update_experiment_meditation(sender_id, 'instructionTime', timepoint)
-            else:
-                send_message(sender_id, "Sorry, I didn't quite understand that.")
-                send_message(sender_id,"What time would you like your mediation prompt email? Enter a time in a 12 hour format along with AM or PM.")
+        timepoint = format_timepoint(message_text)
+        print(timepoint)
+        if timepoint is not None:
+            send_message(sender_id, "Gotcha, "+str(timepoint))
+            fb_update_experiment_meditation(sender_id, 'instructionTime', timepoint)
+        else:
+            send_message(sender_id, "Sorry, I didn't quite understand that.")
+            send_message(sender_id,"What time would you like your mediation prompt email? Enter a time in a 12 hour format along with AM or PM.")
     elif action=='responseTime':
         # Try and get timepoint from current message
         try:
