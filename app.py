@@ -42,7 +42,7 @@ def webhook():
 
                     send_message(sender_id, "hey dickhead" + sender_id)
 
-                    txt = urllib2.urlopen("https://graph.facebook.com/v2.6/"+sender_id+"?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token="+os.environ["PAGE_ACCESS_TOKEN"]+").read()")
+                    txt = urllib2.urlopen("https://graph.facebook.com/v2.6/"+sender_id+"?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token="+os.environ["PAGE_ACCESS_TOKEN"]).read()
                     send_message(txt) 
 
                 if messaging_event.get("delivery"):  # delivery confirmation
