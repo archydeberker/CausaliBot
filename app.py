@@ -127,7 +127,7 @@ def get_next_info(sender_id,message_text):
         except:
             send_message(sender_id,"What time would you like your happiness prompt email? Enter a time in a 12 hour format along with AM or PM.")
     else:
-        send_message(sender_id,"Great, we've got everything we need!")
+        send_message(sender_id,"Great, we've got everything we need to start your experiment!")
 
 
 def format_timepoint(message_text):
@@ -136,21 +136,14 @@ def format_timepoint(message_text):
 
     inputs:     message_text (str)'''   
 
-    rq = urllib2.Request('https://api.wit.ai/message?v=20170129&q='+message_text,headers={"Authorization": "Bearer FS4CJQVZGWFNJ525V5JJ7NVR5SWBDUIG"})
-
-    log('composed request')
-    rq.add_header('Content-Type', 'application/json')
-
-    msg = urllib2.urlopen(rq).read()
-    msg_dict = json.loads(msg)
-
+    msg_dict = wit.understand_string(message_text)
     # check if the correct values are returned by 
     if 'datetime' in msg_dict:
         if 'values' in msg_dict['datetime']:
             # extract time only so its a nice clean string ready to go into database TO BE IMPLEMENTED
-
-            return msg_dict['datetime']['values']
-    
+            t = msg_dict['datetime']['values']
+            print(t)
+            return t
     # value not found, return None
     return None
 
