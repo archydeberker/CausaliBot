@@ -530,7 +530,7 @@ def fb_check_experiment_setup(fb_id):
 		return 'instructionTime'
 	elif user_exp['responseTimeLocal'] is None:
 		return 'responseTime'
-	else
+	else:
 		return 'chocksAway'
 
 
