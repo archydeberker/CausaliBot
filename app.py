@@ -43,7 +43,10 @@ def webhook():
                     send_message(sender_id, "hey dickhead" + sender_id)
 
                     txt = urllib2.urlopen("https://graph.facebook.com/v2.6/"+sender_id+"?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token="+os.environ["PAGE_ACCESS_TOKEN"]).read()
-                    send_message(sender_id,txt) 
+                    txt_dict = json.loads(txt)[0]
+
+                    name = txt_dict['first_name']
+                    send_message(sender_id,'Hey ' + name + ' nice to meet you! Welcome to Causali!') 
 
                 if messaging_event.get("delivery"):  # delivery confirmation
                     pass
