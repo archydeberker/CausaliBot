@@ -134,10 +134,14 @@ def format_timepoint(message_text):
     inputs:     message_text (str)'''   
 
     rq = urllib2.Request('https://api.wit.ai/message?v=20170129&q='+message_text,headers={"Authorization": "Bearer FS4CJQVZGWFNJ525V5JJ7NVR5SWBDUIG"})
+    log('composed request')
     msg = urllib2.urlopen(rq).read()
-
+    log('accessed witai')
     msg_dict = json.loads(msg)
+    log('loaded')
     timepoint = msg_dict['datetime']['values']
+    log('got dates from msg_dicts')
+    log(timepoint)
 
     return timepoint
 
