@@ -138,7 +138,6 @@ def format_timepoint(message_text):
 
     rq = urllib2.Request('https://api.wit.ai/message?v=20170129&q='+message_text,headers={"Authorization": "Bearer FS4CJQVZGWFNJ525V5JJ7NVR5SWBDUIG"})
     msg = urllib2.urlopen(rq).read()
-
     msg_dict = json.loads(msg)
 
     # check if the correct values are returned by 
