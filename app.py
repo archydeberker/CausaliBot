@@ -23,7 +23,6 @@ def verify():
 
 
 @app.route('/', methods=['POST'])
-
 def webhook():
 
     # endpoint for processing incoming messaging events
@@ -32,12 +31,9 @@ def webhook():
     log(data)  # you may not want to log every incoming message in production, but it's good for testing
 
     if data["object"] == "page":
-
         for entry in data["entry"]:
             for messaging_event in entry["messaging"]:
-
                 if messaging_event.get("message"):  # someone sent us a message
-
                     sender_id = messaging_event["sender"]["id"]        # the facebook ID of the person sending you the message
                     recipient_id = messaging_event["recipient"]["id"]  # the recipient's ID, which should be your page's facebook ID
                     message_text = messaging_event["message"]["text"]  # the message's text
@@ -117,7 +113,7 @@ def get_next_info(sender_id,message_text):
             fb_update_experiment_meditation(sender_id, 'instructionTime', timepoint)
         else:
             send_message(sender_id, "Sorry, I didn't quite understand that.")
-            send_message(sender_id,"What time would you like your mediation prompt email? Enter a time in a 12 hour format along with AM or PM.")
+            send_message(sender_id,"What time would you like your mediation prompt email?")
     elif action=='responseTime':
         timepoint = format_timepoint(message_text)
         print('Time parsed:', timepoint)
@@ -126,7 +122,7 @@ def get_next_info(sender_id,message_text):
             fb_update_experiment_meditation(sender_id, 'responseTime', timepoint)
         else:
             send_message(sender_id, "Sorry, I didn't quite understand that.")
-            send_message(sender_id,"What time would you like me to ask how you're feeling? Enter a time in a 12 hour format along with AM or PM.")
+            send_message(sender_id,"What time would you like me to ask how you're feeling?")
     else:
         send_message(sender_id,"Great, we've got everything we need to start your experiment!")
 
@@ -135,16 +131,15 @@ def format_timepoint(message_text):
     ''' Return formatted time string based upon message text e.g. '7am'.
     Does so via a call to the Wit.ai interface.
 
-    inputs:     message_text (str)'''   
+    inputs:     message_text (str)
+    '''   
 
     msg_dict = wit.understand_string(message_text)
+    
     # check if the correct values are returned by 
     if 'datetime' in msg_dict:
         if 'values' in msg_dict['datetime']:
-            # extract time only so its a nice clean string ready to go into database TO BE IMPLEMENTED
-            t = msg_dict['datetime']['values']
-            print(t)
-            return t
+            return timestamp_to_simple_string(msg_dict)
     # value not found, return None
     return None
 
