@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import urllib2
+from database import db_utils
 
 import requests
 from flask import Flask, request
@@ -22,6 +23,7 @@ def verify():
 
 
 @app.route('/', methods=['POST'])
+
 def webhook():
 
     # endpoint for processing incoming messaging events
@@ -43,8 +45,20 @@ def webhook():
                     txt = urllib2.urlopen("https://graph.facebook.com/v2.6/"+sender_id+"?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token="+os.environ["PAGE_ACCESS_TOKEN"]).read()
                     txt_dict = json.loads(txt)
 
-                    name = txt_dict['first_name']
-                    send_message(sender_id,'Hey ' + name + ' nice to meet you! Welcome to Causali!') 
+                    first_name = txt_dict['first_name']
+                    second_name = txt_dict['second_name']
+                    
+                    # Check whether sender is in the database. If not, add them.
+
+                    new_user = db_utils.check_new_user(sender_id)
+
+                    if new_user:
+                        send_message(sender_id,'Hey ' + first_name + ' nice to meet you! Welcome to Causali!')
+                        db_utils.store_user(first_name,second_name,sender_id)
+                        send_message(sender_id,"I've added you to our database")
+
+                    else:
+                        send_message(sender_id,'Welcome back ' + name) 
 
                 if messaging_event.get("delivery"):  # delivery confirmation
                     pass
@@ -85,6 +99,7 @@ def send_message(recipient_id, message_text):
 def log(message):  # simple wrapper for logging to stdout on heroku
     print str(message)
     sys.stdout.flush()
+
 
 
 if __name__ == '__main__':
