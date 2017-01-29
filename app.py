@@ -108,14 +108,23 @@ def get_next_info(sender_id,message_text):
     # Check database status, This will initiate the experiment if not already done so, and return a flag as to the next necessary argument
     action=db_utils.fb_check_experiment_setup(sender_id)
 
-    if action==1: # need to get first timepoint
+    if action=='instructionTime': # need to get first timepoint
         # Try and get timepoint from current message
         try:
             timepoint = format_timepoint(message_text)
             print(timepoint)
-            fb_insert_start_time(sender_id,timepoint)
+            fb_update_experiment_meditation(sender_id, 'instructionTime', timepoint)
         except:
             send_message(sender_id,"What time would you like your mediation prompt email? Enter a time in a 12 hour format along with AM or PM.")
+    elif action=='responseTime':
+        # Try and get timepoint from current message
+        try:
+            timepoint = format_timepoint(message_text)
+            print(timepoint)
+            fb_update_experiment_meditation(sender_id, 'responseTime', timepoint)
+        except:
+            send_message(sender_id,"What time would you like your mediation prompt email? Enter a time in a 12 hour format along with AM or PM.")
+        
 
 
 def format_timepoint(message_text):
