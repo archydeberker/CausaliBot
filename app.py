@@ -121,7 +121,7 @@ def get_next_info(sender_id,message_text):
         try:
             timepoint = format_timepoint(message_text)
             print(timepoint)
-            fb_update_experiment_meditation(sender_id, 'instructionTime', timepoint)
+            fb_update_experiment_meditation(sender_id, 'responseTime', timepoint)
         except:
             send_message(sender_id,"What time would you like your mediation prompt email? Enter a time in a 12 hour format along with AM or PM.")
         

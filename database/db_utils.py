@@ -412,7 +412,7 @@ def fb_check_new_user(fb_id):
 	Returns logical
 	"""
 	_, _, coll = open_connection(collectionName='users')
-	return coll.find({'fb_id': user_id}).count() > 0 
+	return coll.find({'fb_id': fb_id}).count() > 0 
 
 
 def fb_store_user(first_name, second_name, fb_id, timezone='Europe/London'):
