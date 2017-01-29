@@ -113,9 +113,11 @@ def get_next_info(sender_id,message_text):
         try:
             timepoint = format_timepoint(message_text)
             print(timepoint)
-            fb_update_experiment_meditation(sender_id, 'instructionTime', timepoint)
-        except:
-            send_message(sender_id,"What time would you like your mediation prompt email? Enter a time in a 12 hour format along with AM or PM.")
+            if timepoint is not None:
+                fb_update_experiment_meditation(sender_id, 'instructionTime', timepoint)
+            else:
+                send_message(sender_id, "Sorry, I didn't quite understand that.")
+                send_message(sender_id,"What time would you like your mediation prompt email? Enter a time in a 12 hour format along with AM or PM.")
     elif action=='responseTime':
         # Try and get timepoint from current message
         try:
@@ -123,7 +125,7 @@ def get_next_info(sender_id,message_text):
             print(timepoint)
             fb_update_experiment_meditation(sender_id, 'responseTime', timepoint)
         except:
-            send_message(sender_id,"What time would you like your mediation prompt email? Enter a time in a 12 hour format along with AM or PM.")
+            send_message(sender_id,"What time would you like your happiness prompt email? Enter a time in a 12 hour format along with AM or PM.")
     else:
         send_message(sender_id,"Great, we've got everything we need!")
 
@@ -138,9 +140,16 @@ def format_timepoint(message_text):
     msg = urllib2.urlopen(rq).read()
 
     msg_dict = json.loads(msg)
-    timepoint = msg_dict['datetime']['values']
 
-    return timepoint
+    # check if the correct values are returned by 
+    if 'datetime' in msg_dict:
+        if 'values' in msg_dict['datetime']:
+            # extract time only so its a nice clean string ready to go into database TO BE IMPLEMENTED
+
+            return msg_dict['datetime']['values']
+    
+    # value not found, return None
+    return None
 
 
 if __name__ == '__main__':
