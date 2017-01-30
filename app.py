@@ -113,7 +113,7 @@ def get_next_info(sender_id,message_text):
             fb_update_experiment_meditation(sender_id, 'instructionTime', timepoint)
         else:
             send_message(sender_id, "Sorry, I didn't quite understand that.")
-            send_message(sender_id,"What time would you like your mediation prompt email?")
+            send_message(sender_id,"What time would you like your meditation prompt email?")
     elif action=='responseTime':
         timepoint = format_timepoint(message_text)
         print('Time parsed:', timepoint)
@@ -135,6 +135,7 @@ def format_timepoint(message_text):
     '''   
 
     msg_dict = wit.understand_string(message_text)
+    log(msg_dict)
     
     # check if the correct values are returned by 
     if 'datetime' in msg_dict:
