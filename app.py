@@ -110,7 +110,7 @@ def get_next_info(sender_id,message_text):
         print('Time parsed:', timepoint)
         if timepoint is not None:
             send_message(sender_id, "Gotcha, "+str(timepoint))
-            fb_update_experiment_meditation(sender_id, 'instructionTime', timepoint)
+            db_utils.fb_update_experiment_meditation(sender_id, 'instructionTime', timepoint)
         else:
             send_message(sender_id, "Sorry, I didn't quite understand that.")
             send_message(sender_id,"What time would you like your meditation prompt email?")
@@ -119,7 +119,7 @@ def get_next_info(sender_id,message_text):
         print('Time parsed:', timepoint)
         if timepoint is not None:
             send_message(sender_id, "Gotcha, "+str(timepoint))
-            fb_update_experiment_meditation(sender_id, 'responseTime', timepoint)
+            db_utils.fb_update_experiment_meditation(sender_id, 'responseTime', timepoint)
         else:
             send_message(sender_id, "Sorry, I didn't quite understand that.")
             send_message(sender_id,"What time would you like me to ask how you're feeling?")
