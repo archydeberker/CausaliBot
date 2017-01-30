@@ -106,12 +106,16 @@ def get_next_info(sender_id,message_text):
     log(action)
 
     if action=='instructionTime': # need to get first timepoint
+    # TO DO: currently, after it has sucessfully returned a 'gotcha' message for meditation time, it still returns flag 'instructionTime' on next msg...
+    # Don't know whether this is problem with entering into or checking the database.
+
         # Try and get timepoint from current message
         timepoint = format_timepoint(message_text)
         print('Time parsed:', timepoint)
         if timepoint is not None:
             send_message(sender_id, "Gotcha, "+str(timepoint))
             db_utils.fb_update_experiment_meditation(sender_id, 'instructionTime', timepoint)
+            send_message(sender_id,"And what time would you like me to ask how you're feeling?")
         else:
             send_message(sender_id, "Sorry, I didn't quite understand that.")
             send_message(sender_id,"What time would you like your meditation prompt email?")
@@ -121,7 +125,8 @@ def get_next_info(sender_id,message_text):
         if timepoint is not None:
             send_message(sender_id, "Gotcha, "+str(timepoint))
             db_utils.fb_update_experiment_meditation(sender_id, 'responseTime', timepoint)
-            send_message(sender_id,"And what time would you like me to ask how you're feeling?")
+            send_message(sender_id,"Great, we've got everything we need to start your experiment!")
+   
         else:
             send_message(sender_id, "Sorry, I didn't quite understand that.")
             send_message(sender_id,"What time would you like me to ask how you're feeling?")
