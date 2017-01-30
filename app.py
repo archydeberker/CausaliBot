@@ -136,14 +136,14 @@ def format_timepoint(message_text):
 
     msg_dict = wit.understand_string(message_text)
     log(msg_dict)
-    log('archy test')
     
     # check if the correct values are returned by 
     if 'datetime' in msg_dict:
         if 'values' in msg_dict['datetime']:
             return timestamp_to_simple_string(msg_dict)
     # value not found, return None
-    return None
+    else:
+        return None
 
 
 if __name__ == '__main__':
