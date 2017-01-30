@@ -142,7 +142,7 @@ def format_timepoint(message_text):
         log('found entities')
         if 'values' in msg_dict['entities']['datetime'][0]:
             log('found datetime')
-            return timestamp_to_simple_string(msg_dict)
+            return wit.timestamp_to_simple_string(msg_dict)
     # value not found, return None
     else:
         return None
