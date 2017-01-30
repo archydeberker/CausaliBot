@@ -31,6 +31,5 @@ def timestamp_to_simple_string(wit_object):
 	Example input: "2017-01-30T07:00:00.000-08:00"
 	"""
 	t = wit_object['entities']['datetime'][0]['values'][0]['value']
-	log(t)
 	return t[11:16]  # ugly, but parsing datetime strings is also fraught with shit. 
 
