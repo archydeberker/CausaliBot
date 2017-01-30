@@ -103,6 +103,7 @@ def get_next_info(sender_id,message_text):
 
     # Check database status, This will initiate the experiment if not already done so, and return a flag as to the next necessary argument
     action=db_utils.fb_check_experiment_setup(sender_id)
+    log(action)
 
     if action=='instructionTime': # need to get first timepoint
         # Try and get timepoint from current message
@@ -120,6 +121,7 @@ def get_next_info(sender_id,message_text):
         if timepoint is not None:
             send_message(sender_id, "Gotcha, "+str(timepoint))
             db_utils.fb_update_experiment_meditation(sender_id, 'responseTime', timepoint)
+            send_message(sender_id,"And what time would you like me to ask how you're feeling?")
         else:
             send_message(sender_id, "Sorry, I didn't quite understand that.")
             send_message(sender_id,"What time would you like me to ask how you're feeling?")
