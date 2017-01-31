@@ -1,2 +1,1 @@
-import log
-log('scheduled test complete!')
+print('scheduled test complete!')
