@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import urllib2
+import re
 from database import db_utils
 from database import wit
 from database import msg
@@ -51,7 +52,7 @@ def webhook():
                     if new_user:
                         print("NEW USER! WOOHOO!")
                         send_message(sender_id,'Hey ' + txt_dict['first_name'] + ' nice to meet you! Welcome to Causali!')
-                        send_message(sender_id,"To setup your first experiment, type 'start experiment', or type 'help' for commands.")
+
 
                         # store the user in the DB
                         db_utils.fb_store_user(txt_dict['first_name'], txt_dict['last_name'], sender_id, txt_dict['timezone'])
@@ -64,7 +65,7 @@ def webhook():
                             db_utils.fb_init_experiment_meditation(sender_id)
                             send_message(sender_id, "What time would you like your meditation prompt email?")
                         elif message_text.lower() == 'help':
-                            send_message(sended_id, 
+                            send_message(sender_id, 
                                 """You dumb? Ok I'll help:
                                 start experiment
                                 delete experiment
