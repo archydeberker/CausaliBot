@@ -436,15 +436,6 @@ def fb_user_check_experiment_signup_status(fb_id):
 		return 'complete'
 
 
-
-def fb_user_has_complete_experiment(fb_id):
-	""" Check if user already has experiment with instruction and response time. Returns True (has experiment) or False (does not have experiment)
-	"""
-	_, _, collection = open_connection(collectionName='experiments')
-	user_exp = collection.find({"fb_id": fb_id})
-	return user_exp.count()>0
-
-
 def fb_store_user(first_name, second_name, fb_id, timezone='Europe/London'):
 	""" Store user info in a collection. 
 	As I understand it you don't have to sanitise inputs in MongoDB unless you're concatenating strings.

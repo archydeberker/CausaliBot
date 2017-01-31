@@ -61,7 +61,12 @@ def webhook():
                         ####### EXPLICIT COMMANDS
                         if message_text.lower() == 'start experiment':
                             if exp_state != "no experiment":
-                                send_message(sender_id, "You already have an experiment registered with us. Try 'help'")
+                                send_message(sender_id, "Another one? You already have an experiment registered with us...")
+                                if exp_state == 'complete':
+                                    send_message(sender_id, "You can just wait for your next instruction.")
+                                else:
+                                    send_message(sender_id, "Let's complete your setup for that.")
+                                    get_next_info(sender_id, message_text)
                             else:
                                 send_message(sender_id, "Chocks away!")
                                 db_utils.fb_init_experiment_meditation(sender_id)
@@ -157,7 +162,6 @@ def get_next_info(sender_id,message_text):
             db_utils.fb_update_experiment(sender_id, 'instructionTimeLocal', timepoint)
             send_message(sender_id,"And what time would you like me to ask how you're feeling?")
         else:
-            send_message(sender_id, "Sorry, I didn't quite understand that.")
             send_message(sender_id, "What time would you like your meditation prompt email?")
 
     elif action=='responseTime':
@@ -169,7 +173,6 @@ def get_next_info(sender_id,message_text):
             send_message(sender_id,"We've got everything we need for take-off, so hold on to your gonads!")
    
         else:
-            send_message(sender_id, "Sorry, I didn't quite understand that.")
             send_message(sender_id,"What time would you like me to ask how you're feeling?")
 
 
@@ -191,6 +194,7 @@ def format_timepoint(message_text):
             return wit.timestamp_to_simple_string(msg_dict)
     # value not found, return None
     else:
+        send_message(sender_id, "Sorry, I didn't quite understand that.")
         return None
 
 
