@@ -51,7 +51,7 @@ def webhook():
 
                     if new_user:
                         print("NEW USER! WOOHOO!")
-                        send_message(sender_id, msg.rnd('greeting') + txt_dict['first_name'] + ' nice to meet you! Welcome to Causali!')
+                        send_message(sender_id, msg.rnd('greeting') + ' ' + txt_dict['first_name'] + ' nice to meet you! Welcome to Causali!')
 
 
                         # store the user in the DB
@@ -81,7 +81,7 @@ def webhook():
                                 send_message(sender_id, str(r.deleted_count) + " experiments deleted.")
                                 send_message(sender_id, "Science has left the building :(")
                         elif message_text.lower() == "delete me from your system":
-                            r = db_utils.delete_user(sender_id)
+                            r = db_utils.fb_delete_user(sender_id)
                             send_message(sender_id, "Why you go? You've been removed :(")
 
                         # The next ones test against state of the experiment, so all explicit commands need to go above this line

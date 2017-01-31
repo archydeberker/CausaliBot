@@ -479,7 +479,7 @@ def fb_delete_user(fb_id):
 	"""Delete a user
 	
 	Input
-		fb_id			string, will be converted to 
+		fb_id			string
 
 	Returns
 		DeleteResult result (.deleted_count)
