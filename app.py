@@ -64,7 +64,7 @@ def webhook():
                             db_utils.fb_init_experiment_meditation(sender_id)
                             get_next_info(sender_id, message_text)
                         elif message_text.lower() == 'help':
-                            send_message(sended_id, 
+                            send_message(sender_id, 
                                 """You dumb? Ok I'll help:
                                 start experiment
                                 delete experiment
