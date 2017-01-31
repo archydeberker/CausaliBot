@@ -61,7 +61,12 @@ def webhook():
                         ####### EXPLICIT COMMANDS
                         if message_text.lower() == 'start experiment':
                             if exp_state != "no experiment":
-                                send_message(sender_id, "You already have an experiment registered with us. Try 'help'")
+                                send_message(sender_id, "Another one? You already have an experiment registered with us...")
+                                if exp_state == 'complete':
+                                    send_message(sender_id, "You can just wait for your next instruction.")
+                                else:
+                                    send_message(sender_id, "Let's complete your setup for that.")
+                                    get_next_info(sender_id, message_text)
                             else:
                                 send_message(sender_id, "Chocks away!")
                                 db_utils.fb_init_experiment_meditation(sender_id)
@@ -71,7 +76,7 @@ def webhook():
 """Try any of these:
 "start experiment"
 "delete experiment"
-"delete me from your system"
+"delete user"
 """)
                         elif message_text.lower() == 'delete experiment':
                             r = db_utils.fb_delete_experiment(sender_id)
@@ -80,9 +85,10 @@ def webhook():
                             else:
                                 send_message(sender_id, str(r.deleted_count) + " experiments deleted.")
                                 send_message(sender_id, "Science has left the building :(")
-                        elif message_text.lower() == "delete me from your system":
+                        elif message_text.lower() == "delete user":
+                            db_utils.fb_delete_experiment(sender_id)
                             r = db_utils.fb_delete_user(sender_id)
-                            send_message(sender_id, "Why you go? You've been removed :(")
+                            send_message(sender_id, "Why you go? Your experiments and user details been removed :(")
 
                         # The next ones test against state of the experiment, so all explicit commands need to go above this line
                         elif exp_state == 'incomplete':
@@ -157,7 +163,6 @@ def get_next_info(sender_id,message_text):
             db_utils.fb_update_experiment(sender_id, 'instructionTimeLocal', timepoint)
             send_message(sender_id,"And what time would you like me to ask how you're feeling?")
         else:
-            send_message(sender_id, "Sorry, I didn't quite understand that.")
             send_message(sender_id, "What time would you like your meditation prompt email?")
 
     elif action=='responseTime':
@@ -169,7 +174,6 @@ def get_next_info(sender_id,message_text):
             send_message(sender_id,"We've got everything we need for take-off, so hold on to your gonads!")
    
         else:
-            send_message(sender_id, "Sorry, I didn't quite understand that.")
             send_message(sender_id,"What time would you like me to ask how you're feeling?")
 
 
@@ -191,6 +195,7 @@ def format_timepoint(message_text):
             return wit.timestamp_to_simple_string(msg_dict)
     # value not found, return None
     else:
+        send_message(sender_id, "Sorry, I didn't quite understand that.")
         return None
 
 
