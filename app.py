@@ -92,7 +92,7 @@ def webhook():
                             send_message(sender_id, "Why you go? Your experiments and user details been removed :(")
 
                         # The next ones test against state of the experiment, so all explicit commands need to go above this line
-                        elif exp_state == 'incomplete':
+                        elif exp_state in ['instructionTime','responseTime']:
                             get_next_info(sender_id, message_text)
                         elif exp_state == 'no experiment':  # if user doesn't have experiment but didn't say one of the commands, then God knows what they want
                             send_message(sender_id, "You're not making yourself clear. Unless you say \"start experiment\", I'll have no clue what you're saying. Or try \"help\"")
@@ -142,7 +142,7 @@ def log(message):  # simple wrapper for logging to stdout on heroku
     print str(message)
     sys.stdout.flush()
 
-def get_next_info(sender_id,message_text):
+def get_next_info(sender_id,message_text,action):
     ''' This looks up the state of the user in the database, and finishes collecting
     any data that's required
 
