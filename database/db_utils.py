@@ -483,7 +483,7 @@ def fb_init_experiment_meditation(fb_id, instructionTime=None, responseTime=None
 	return insert_result
 
 
-def fb_update_experiment_meditation(fb_id, key, value):
+def fb_update_experiment(fb_id, key, value):
 	""" Update a user experiment with a new value
 	Initially written to support updates to instruction and response time
 
@@ -491,6 +491,7 @@ def fb_update_experiment_meditation(fb_id, key, value):
 	key: string indicating the key to update
 	value: the new value
 	"""
+	print('Updating experiment record with ' + key + ' set to ' + str(value))
 	_, _, collection = open_connection(collectionName='experiments')
 	return collection.update_one({'fb_id': fb_id}, {
 		'$set': {
@@ -519,9 +520,11 @@ def fb_check_experiment_setup(fb_id):
 	user_exp = collection.find({"fb_id": fb_id})
 	# if >1, something is wrong, so delete all and start over
 	if user_exp.count() > 1:
+		print('deleting experiment because theres more than one')
 		collection.delete({"fb_id": fb_id})
 	# if 0, set up new experiment with null times
 	if user_exp.count() == 0:
+		print('creating new experiment because theres none for this user')
 		fb_init_experiment_meditation(fb_id)
 
 	# user_exp may have changed to query again

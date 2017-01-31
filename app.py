@@ -114,17 +114,18 @@ def get_next_info(sender_id,message_text):
         print('Time parsed:', timepoint)
         if timepoint is not None:
             send_message(sender_id, "Gotcha, "+str(timepoint))
-            db_utils.fb_update_experiment_meditation(sender_id, 'instructionTime', timepoint)
+            db_utils.fb_update_experiment(sender_id, 'instructionTime', timepoint)
             send_message(sender_id,"And what time would you like me to ask how you're feeling?")
         else:
             send_message(sender_id, "Sorry, I didn't quite understand that.")
-            send_message(sender_id,"What time would you like your meditation prompt email?")
+            send_message(sender_id, "What time would you like your meditation prompt email?")
+
     elif action=='responseTime':
         timepoint = format_timepoint(message_text)
         print('Time parsed:', timepoint)
         if timepoint is not None:
             send_message(sender_id, "Gotcha, "+str(timepoint))
-            db_utils.fb_update_experiment_meditation(sender_id, 'responseTime', timepoint)
+            db_utils.fb_update_experiment(sender_id, 'responseTime', timepoint)
             send_message(sender_id,"Great, we've got everything we need to start your experiment!")
    
         else:
@@ -146,9 +147,9 @@ def format_timepoint(message_text):
     
     # check if the correct values are returned by 
     if 'datetime' in msg_dict['entities']:
-        log('found entities')
+        log('found datetime')
         if 'values' in msg_dict['entities']['datetime'][0]:
-            log('found datetime')
+            log('found values')
             return wit.timestamp_to_simple_string(msg_dict)
     # value not found, return None
     else:
