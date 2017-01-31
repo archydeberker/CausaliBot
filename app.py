@@ -41,18 +41,56 @@ def webhook():
                     # Get the user's ID
                     txt = urllib2.urlopen("https://graph.facebook.com/v2.6/"+sender_id+"?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token="+os.environ["PAGE_ACCESS_TOKEN"]).read()
                     txt_dict = json.loads(txt)
+                    print("PRINTING THE USER INFO")
+                    print(txt_dict)
                     
-                    # Check whether sender is in the database. If not, add them.
+                    # Check whether sender is in the database.
                     new_user = db_utils.fb_check_new_user(sender_id)
 
                     if new_user:
+                        print("NEW USER! WOOHOO!")
                         send_message(sender_id,'Hey ' + txt_dict['first_name'] + ' nice to meet you! Welcome to Causali!')
-                        db_utils.fb_store_user(txt_dict['first_name'],txt_dict['last_name'],sender_id,txt_dict['timezone'])
-                        send_message(sender_id,"To setup your first experiment, type start experiment")
-                    else:
-                        get_next_info(sender_id,message_text)
+                        send_message(sender_id,"To setup your first experiment, type start experiment, or type 'help' for commands.")
 
-                    # Continue with gathering information as necessary
+                        # store the user in the DB
+                        db_utils.fb_store_user(txt_dict['first_name'], txt_dict['last_name'], sender_id, txt_dict['timezone'])
+                    else:  # if returning user
+                        exp_state = fb_user_check_experiment_signup_status(sender_id)
+
+                        ####### EXPLICIT COMMANDS
+                        if message_text.lower() == 'start experiment':
+                            send_message(sender_id, "Chocks away!")
+                            db_utils.fb_init_experiment_meditation(sender_id)
+                            get_next_info(sender_id, message_text)
+                        elif message_text.lower() == 'help':
+                            send_message(sended_id, 
+                                """You dumb? Ok I'll help:
+                                start experiment
+                                delete experiment
+                                fuck you take me out of your system
+
+                                Capiche?
+                                """)
+                        elif message_text.lower() == 'delete experiment':
+                            r = db_utils.delete_experiment(sender_id)
+                            if r.deleted_count == 0:
+                                send_message(sender_id, "You have no experiments, dickhead. Try 'start experiment'")
+                            else:
+                                send_message(sender_id, str(r.deleted_count) + " experiments deleted.")
+                                send_message(sender_id, "Science has left the building :(")
+                        elif message_text.lower() == "fuck you take me out of your system":
+                            r = db_utils.delete_user(sender_id)
+                            send_message(sender_id, "Why you go? I never loved you either, and I slept with your sister.")
+
+                        # The next ones test against state of the experiment, so all explicit commands need to go above this line
+                        elif exp_state == 'incomplete':
+                            get_next_info(sender_id, message_text)
+                        elif exp_state == 'no experiment':  # if user doesn't have experiment but didn't say 'start' or 'help', then God knows what they want
+                            send_message(sender_id, "I'm really dumb. Unless you say \"start experiment\", I'll have no clue what you're saying.")
+                        elif exp_state == 'complete':  # if they already have complete experiment
+                            send_message(sender_id, "Mate, stop bothering me. You've told me all I needed.")
+                            
+
                     
 
                 if messaging_event.get("delivery"):  # delivery confirmation
@@ -102,7 +140,7 @@ def get_next_info(sender_id,message_text):
     Input:  sender_id (str) '''
 
     # Check database status, This will initiate the experiment if not already done so, and return a flag as to the next necessary argument
-    action=db_utils.fb_check_experiment_setup(sender_id)
+    action=db_utils.fb_user_check_experiment_signup_status(sender_id)
     log(action)
 
     if action=='instructionTime': # need to get first timepoint
@@ -124,15 +162,13 @@ def get_next_info(sender_id,message_text):
         timepoint = format_timepoint(message_text)
         print('Time parsed:', timepoint)
         if timepoint is not None:
-            send_message(sender_id, "Gotcha, "+str(timepoint))
+            send_message(sender_id, "Aye aye, captain, we'll be sailing at "+str(timepoint))
             db_utils.fb_update_experiment(sender_id, 'responseTimeLocal', timepoint)
-            send_message(sender_id,"Great, we've got everything we need to start your experiment!")
+            send_message(sender_id,"We've got everything we need for take-off, so hold on to your gonads!")
    
         else:
             send_message(sender_id, "Sorry, I didn't quite understand that.")
             send_message(sender_id,"What time would you like me to ask how you're feeling?")
-    else:
-        send_message(sender_id,"Great, we've got everything we need to start your experiment!")
 
 
 def format_timepoint(message_text):
