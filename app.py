@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import urllib2
+import re
 from database import db_utils
 from database import wit
 import requests
@@ -50,6 +51,9 @@ def webhook():
                         db_utils.fb_store_user(txt_dict['first_name'],txt_dict['last_name'],sender_id,txt_dict['timezone'])
                         send_message(sender_id,"To setup your first experiment, type start experiment")
                     else:
+                        if 'start' in message_text:
+                            send_message(sender_id,"Great, let's get your first experiment set up. What time would you like your meditation prompt email?")
+                            
                         get_next_info(sender_id,message_text)
 
                     # Continue with gathering information as necessary
