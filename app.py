@@ -55,7 +55,7 @@ def webhook():
                         # store the user in the DB
                         db_utils.fb_store_user(txt_dict['first_name'], txt_dict['last_name'], sender_id, txt_dict['timezone'])
                     else:  # if returning user
-                        exp_state = fb_user_check_experiment_signup_status(sender_id)
+                        exp_state = db_utils.fb_user_check_experiment_signup_status(sender_id)
 
                         ####### EXPLICIT COMMANDS
                         if message_text.lower() == 'start experiment':
