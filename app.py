@@ -76,7 +76,7 @@ def webhook():
 """Try any of these:
 "start experiment"
 "delete experiment"
-"delete me from your system"
+"delete user"
 """)
                         elif message_text.lower() == 'delete experiment':
                             r = db_utils.fb_delete_experiment(sender_id)
@@ -85,7 +85,7 @@ def webhook():
                             else:
                                 send_message(sender_id, str(r.deleted_count) + " experiments deleted.")
                                 send_message(sender_id, "Science has left the building :(")
-                        elif message_text.lower() == "delete me from your system":
+                        elif message_text.lower() == "delete user":
                             db_utils.fb_delete_experiment(sender_id)
                             r = db_utils.fb_delete_user(sender_id)
                             send_message(sender_id, "Why you go? Your experiments and user details been removed :(")
