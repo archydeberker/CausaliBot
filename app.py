@@ -52,8 +52,7 @@ def webhook():
                     if new_user:
                         print("NEW USER! WOOHOO!")
                         send_message(sender_id, msg.rnd('greeting') + ' ' + txt_dict['first_name'] + ' nice to meet you! Welcome to Causali!')
-
-
+                        send_message(sender_id, 'Type "start experiment" to get started, or "help" for all commands.')
                         # store the user in the DB
                         db_utils.fb_store_user(txt_dict['first_name'], txt_dict['last_name'], sender_id, txt_dict['timezone'])
                     else:  # if returning user
@@ -61,18 +60,21 @@ def webhook():
 
                         ####### EXPLICIT COMMANDS
                         if message_text.lower() == 'start experiment':
-                            send_message(sender_id, "Chocks away!")
-                            db_utils.fb_init_experiment_meditation(sender_id)
-                            send_message(sender_id, "What time would you like your meditation prompt email?")
+                            if exp_state != "no experiment":
+                                send_message(sender_id, "You already have an experiment registered with us. Try 'help'")
+                            else:
+                                send_message(sender_id, "Chocks away!")
+                                db_utils.fb_init_experiment_meditation(sender_id)
+                                send_message(sender_id, "What time would you like your meditation prompt email?")
                         elif message_text.lower() == 'help':
                             send_message(sender_id, 
-                                """Ok I'll help:
-                                start experiment
-                                delete experiment
-                                delete me from your system
+"""Ok I'll help:
+start experiment
+delete experiment
+delete me from your system
 
-                                Capiche?
-                                """)
+Capiche?
+""")
                         elif message_text.lower() == 'delete experiment':
                             r = db_utils.delete_experiment(sender_id)
                             if r.deleted_count == 0:

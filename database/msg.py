@@ -11,6 +11,7 @@ messages = {
 
 
 def rnd(var):
-	""" var is the name you want a random element from
+	""" var is the name you want a random element from.
+	Example: msg.rnd('greeting')
 	"""
 	return random.choice(messages[var])
