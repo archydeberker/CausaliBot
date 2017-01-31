@@ -415,6 +415,36 @@ def fb_check_new_user(fb_id):
 	return coll.find({'fb_id': fb_id}).count() == 0
 
 
+def fb_user_check_experiment_signup_status(fb_id):
+	""" Returns 'no experiment', 'instructionTime', 'responseTime', 'complete', 'multiple'
+
+	"""
+	_, _, collection = open_connection(collectionName='experiments')
+	user_exp = collection.find({"fb_id": fb_id})
+	if user_exp.count() == 0:
+		return 'no experiment'
+	elif user_exp.count() > 1:
+		return "multiple"
+
+	# another trip to mongo, should
+	exp = user_exp.next()
+	if exp['instructionTimeLocal'] is None:
+		return 'instructionTime'
+	elif user_exp['responseTimeLocal'] is None:
+		return 'responseTime'
+	else:
+		return 'complete'
+
+
+
+def fb_user_has_complete_experiment(fb_id):
+	""" Check if user already has experiment with instruction and response time. Returns True (has experiment) or False (does not have experiment)
+	"""
+	_, _, collection = open_connection(collectionName='experiments')
+	user_exp = collection.find({"fb_id": fb_id})
+	return user_exp.count()>0
+
+
 def fb_store_user(first_name, second_name, fb_id, timezone='Europe/London'):
 	""" Store user info in a collection. 
 	As I understand it you don't have to sanitise inputs in MongoDB unless you're concatenating strings.
@@ -430,7 +460,7 @@ def fb_store_user(first_name, second_name, fb_id, timezone='Europe/London'):
 		result 		contains unique id of user as insert_results.inserted_id
 	"""
 	
-	client, db, collection = open_connection(collectionName='users')
+	_, _, collection = open_connection(collectionName='users')
 	# write the user info to the database
 	result = collection.insert_one({
 		'first_name': first_name,
@@ -455,7 +485,15 @@ def fb_delete_user(fb_id):
 		DeleteResult result (.deleted_count)
 	"""
 	_, _, coll = open_connection(collectionName='users')
-	return coll.delete_one({'fb_id': fb_id})
+	return coll.delete_many({'fb_id': fb_id})
+
+
+def fb_delete_experiment(fb_id):
+	""" Delete the experiments associated with this user
+
+	"""
+	_, _, coll = open_connection(collectionName='experiments')
+	return coll.delete_many({'fb_id': fb_id})
 
 
 def fb_init_experiment_meditation(fb_id, instructionTime=None, responseTime=None):
@@ -493,6 +531,26 @@ def fb_update_experiment(fb_id, key, value):
 	"""
 	print('Updating experiment record with ' + key + ' set to ' + str(value))
 	_, _, collection = open_connection(collectionName='experiments')
+	return collection.update_one({'fb_id': fb_id}, {
+		'$set': {
+			key: value
+		},
+		"$currentDate": {
+			'last_modified': True
+		}
+	})
+
+
+def fb_update_user(fb_id, key, value):
+	""" Update a user with a new value
+	Initially written to support updates to instruction and response time
+
+	fb_id: string
+	key: string indicating the key to update
+	value: the new value
+	"""
+	print('Updating experiment record with ' + key + ' set to ' + str(value))
+	_, _, collection = open_connection(collectionName='users')
 	return collection.update_one({'fb_id': fb_id}, {
 		'$set': {
 			key: value
