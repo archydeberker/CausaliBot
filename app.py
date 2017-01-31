@@ -52,17 +52,11 @@ def webhook():
                         print("NEW USER! WOOHOO!")
                         send_message(sender_id,'Hey ' + txt_dict['first_name'] + ' nice to meet you! Welcome to Causali!')
 
-                        db_utils.fb_store_user(txt_dict['first_name'],txt_dict['last_name'],sender_id,txt_dict['timezone'])
-                        send_message(sender_id,"To setup your first experiment, type start experiment")
-                    else:
-                          get_next_info(sender_id,message_text)
-
-                        send_message(sender_id,"To setup your first experiment, type start experiment, or type 'help' for commands.")
 
                         # store the user in the DB
                         db_utils.fb_store_user(txt_dict['first_name'], txt_dict['last_name'], sender_id, txt_dict['timezone'])
                     else:  # if returning user
-                        exp_state = fb_user_check_experiment_signup_status(sender_id)
+                        exp_state = db_utils.fb_user_check_experiment_signup_status(sender_id)
 
                         ####### EXPLICIT COMMANDS
                         if message_text.lower() == 'start experiment':
@@ -92,10 +86,10 @@ def webhook():
                         # The next ones test against state of the experiment, so all explicit commands need to go above this line
                         elif exp_state == 'incomplete':
                             get_next_info(sender_id, message_text)
-                        elif exp_state == 'no experiment':  # if user doesn't have experiment but didn't say 'start' or 'help', then God knows what they want
-                            send_message(sender_id, "I'm really dumb. Unless you say \"start experiment\", I'll have no clue what you're saying.")
+                        elif exp_state == 'no experiment':  # if user doesn't have experiment but didn't say one of the commands, then God knows what they want
+                            send_message(sender_id, "You're not making yourself clear. Unless you say \"start experiment\", I'll have no clue what you're saying. Or try \"help\"")
                         elif exp_state == 'complete':  # if they already have complete experiment
-                            send_message(sender_id, "Mate, stop bothering me. You've told me all I needed.")
+                            send_message(sender_id, "Mate, stop bothering me. You've told me all I needed. Try \"help\" if you're really stuck.")
                             
 
                     
