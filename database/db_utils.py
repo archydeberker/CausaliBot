@@ -515,6 +515,8 @@ def fb_check_experiment_setup(fb_id):
 			chocksAway (everything is complete and ready to set up experiment)
 	"""
 
+	print('CHECKING WHERE IN THE EXPERIMENT THE USER IS')
+
 	# check how many experiments the user has
 	_, _, collection = open_connection(collectionName='experiments')
 	user_exp = collection.find({"fb_id": fb_id})
