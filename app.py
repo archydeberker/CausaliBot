@@ -68,15 +68,13 @@ def webhook():
                                 send_message(sender_id, "What time would you like your meditation prompt email?")
                         elif message_text.lower() == 'help':
                             send_message(sender_id, 
-"""Ok I'll help:
-start experiment
-delete experiment
-delete me from your system
-
-Capiche?
+"""Try any of these:
+"start experiment"
+"delete experiment"
+"delete me from your system"
 """)
                         elif message_text.lower() == 'delete experiment':
-                            r = db_utils.delete_experiment(sender_id)
+                            r = db_utils.fb_delete_experiment(sender_id)
                             if r.deleted_count == 0:
                                 send_message(sender_id, "You have no experiments. Try 'start experiment'")
                             else:
