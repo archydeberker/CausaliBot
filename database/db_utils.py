@@ -415,6 +415,8 @@ def fb_check_new_user(fb_id):
 	return coll.find({'fb_id': fb_id}).count() == 0
 
 
+## Archy comment: is the below now redundant? See fb_check_experiment_setup below ###
+
 def fb_user_check_experiment_signup_status(fb_id):
 	""" Returns 'no experiment', 'instructionTime', 'responseTime', 'complete', 'multiple'
 
@@ -430,7 +432,7 @@ def fb_user_check_experiment_signup_status(fb_id):
 	exp = user_exp.next()
 	if exp['instructionTimeLocal'] is None:
 		return 'instructionTime'
-	elif user_exp['responseTimeLocal'] is None:
+	elif exp['responseTimeLocal'] is None:
 		return 'responseTime'
 	else:
 		return 'complete'
