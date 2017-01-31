@@ -86,8 +86,9 @@ def webhook():
                                 send_message(sender_id, str(r.deleted_count) + " experiments deleted.")
                                 send_message(sender_id, "Science has left the building :(")
                         elif message_text.lower() == "delete me from your system":
+                            db_utils.fb_delete_experiment(sender_id)
                             r = db_utils.fb_delete_user(sender_id)
-                            send_message(sender_id, "Why you go? You've been removed :(")
+                            send_message(sender_id, "Why you go? Your experiments and user details been removed :(")
 
                         # The next ones test against state of the experiment, so all explicit commands need to go above this line
                         elif exp_state == 'incomplete':
