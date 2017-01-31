@@ -142,7 +142,7 @@ def log(message):  # simple wrapper for logging to stdout on heroku
     print str(message)
     sys.stdout.flush()
 
-def get_next_info(sender_id,message_text,action):
+def get_next_info(sender_id,message_text):
     ''' This looks up the state of the user in the database, and finishes collecting
     any data that's required
 
