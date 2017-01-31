@@ -520,6 +520,7 @@ def fb_check_experiment_setup(fb_id):
 	# check how many experiments the user has
 	_, _, collection = open_connection(collectionName='experiments')
 	user_exp = collection.find({"fb_id": fb_id})
+	print(str(user_exp.count()) + ' experiments found for user ' + fb_id)
 	# if >1, something is wrong, so delete all and start over
 	if user_exp.count() > 1:
 		print('deleting experiment because theres more than one')
@@ -531,6 +532,8 @@ def fb_check_experiment_setup(fb_id):
 
 	# user_exp may have changed to query again
 	user_exp = collection.find_one({"fb_id": fb_id})
+	print("PRINTING EXPERIMENT RECORD FOR THIS USER")
+	print(user_exp)
 	if user_exp['instructionTimeLocal'] is None:
 		return 'instructionTime'
 	elif user_exp['responseTimeLocal'] is None:
