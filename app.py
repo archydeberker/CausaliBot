@@ -51,7 +51,7 @@ def webhook():
 
                     if new_user:
                         print("NEW USER! WOOHOO!")
-                        send_message(sender_id,'Hey ' + txt_dict['first_name'] + ' nice to meet you! Welcome to Causali!')
+                        send_message(sender_id, msg.rnd('greeting') + txt_dict['first_name'] + ' nice to meet you! Welcome to Causali!')
 
 
                         # store the user in the DB
@@ -66,23 +66,23 @@ def webhook():
                             send_message(sender_id, "What time would you like your meditation prompt email?")
                         elif message_text.lower() == 'help':
                             send_message(sender_id, 
-                                """You dumb? Ok I'll help:
+                                """Ok I'll help:
                                 start experiment
                                 delete experiment
-                                fuck you take me out of your system
+                                delete me from your system
 
                                 Capiche?
                                 """)
                         elif message_text.lower() == 'delete experiment':
                             r = db_utils.delete_experiment(sender_id)
                             if r.deleted_count == 0:
-                                send_message(sender_id, "You have no experiments, " + msg.rnd('offensive') + ". Try 'start experiment'")
+                                send_message(sender_id, "You have no experiments. Try 'start experiment'")
                             else:
                                 send_message(sender_id, str(r.deleted_count) + " experiments deleted.")
                                 send_message(sender_id, "Science has left the building :(")
-                        elif message_text.lower() == "fuck you take me out of your system":
+                        elif message_text.lower() == "delete me from your system":
                             r = db_utils.delete_user(sender_id)
-                            send_message(sender_id, "Why you go? I never loved you either, and I slept with your sister.")
+                            send_message(sender_id, "Why you go? You've been removed :(")
 
                         # The next ones test against state of the experiment, so all explicit commands need to go above this line
                         elif exp_state == 'incomplete':
@@ -90,7 +90,7 @@ def webhook():
                         elif exp_state == 'no experiment':  # if user doesn't have experiment but didn't say one of the commands, then God knows what they want
                             send_message(sender_id, "You're not making yourself clear. Unless you say \"start experiment\", I'll have no clue what you're saying. Or try \"help\"")
                         elif exp_state == 'complete':  # if they already have complete experiment
-                            send_message(sender_id, "Mate, stop bothering me. You've told me all I needed. Try \"help\" if you're really stuck.")
+                            send_message(sender_id, "You're already set for the experiment. Try \"help\" if you're really stuck.")
                             
 
                     
