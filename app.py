@@ -57,6 +57,7 @@ def webhook():
                         db_utils.fb_store_user(txt_dict['first_name'], txt_dict['last_name'], sender_id, txt_dict['timezone'])
                     else:  # if returning user
                         exp_state = db_utils.fb_user_check_experiment_signup_status(sender_id)
+                        print(exp_state)
 
                         ####### EXPLICIT COMMANDS
                         if message_text.lower() == 'start experiment':
@@ -73,11 +74,11 @@ def webhook():
                                 send_message(sender_id, "What time would you like your meditation prompt email?")
                         elif message_text.lower() == 'help':
                             send_message(sender_id, 
-"""Try any of these:
-"start experiment"
-"delete experiment"
-"delete user"
-""")
+                            """Try any of these:
+                            "start experiment"
+                            "delete experiment"
+                            "delete user"
+                            """)
                         elif message_text.lower() == 'delete experiment':
                             r = db_utils.fb_delete_experiment(sender_id)
                             if r.deleted_count == 0:
