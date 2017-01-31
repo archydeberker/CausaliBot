@@ -4,6 +4,7 @@ import json
 import urllib2
 from database import db_utils
 from database import wit
+from database import msg
 import requests
 from flask import Flask, request
 
@@ -61,7 +62,7 @@ def webhook():
                         if message_text.lower() == 'start experiment':
                             send_message(sender_id, "Chocks away!")
                             db_utils.fb_init_experiment_meditation(sender_id)
-                            get_next_info(sender_id, message_text)
+                            send_message(sender_id, "What time would you like your meditation prompt email?")
                         elif message_text.lower() == 'help':
                             send_message(sended_id, 
                                 """You dumb? Ok I'll help:
@@ -74,7 +75,7 @@ def webhook():
                         elif message_text.lower() == 'delete experiment':
                             r = db_utils.delete_experiment(sender_id)
                             if r.deleted_count == 0:
-                                send_message(sender_id, "You have no experiments, dickhead. Try 'start experiment'")
+                                send_message(sender_id, "You have no experiments, " + msg.rnd('offensive') + ". Try 'start experiment'")
                             else:
                                 send_message(sender_id, str(r.deleted_count) + " experiments deleted.")
                                 send_message(sender_id, "Science has left the building :(")
