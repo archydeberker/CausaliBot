@@ -19,7 +19,9 @@ def rnd(var):
 
 
 def rnd_gif(tag=''):
-	""" get random Giphy gif, or random based on tag.
+	""" get random Giphy gif, or random based on tag given. 
+	https://github.com/Giphy/GiphyAPI#random-endpoint
+	
 	Returns the URL of the gif
 	"""
 	# uses a public beta API key
