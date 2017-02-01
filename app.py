@@ -141,7 +141,7 @@ def send_message(recipient_id, message_text):
 
 def send_image(recipient_id, image_url=msg.rnd_gif()):
     """ Sends an image at the location of the image_url. 
-    
+
     If none given, sends a random giphy gif
     """
     log("sending IMAGE to {recipient}: {text}".format(recipient=recipient_id, text=image_url))
@@ -157,9 +157,11 @@ def send_image(recipient_id, image_url=msg.rnd_gif()):
             "id": recipient_id
         },
         "message": {
-            "type": "image",
-            "payload": {
-                "url": image_url
+            "attachment": {
+                "type": "image",
+                "payload": {
+                    "url": image_url
+                }
             }
         }
     })

@@ -25,6 +25,7 @@ def rnd_gif(tag=''):
 
 	Returns the URL of the gif
 	"""
+	
 	# uses a public beta API key
 	query = {'api_key': 'dc6zaTOxFJmzC', 'tag': urllib.urlencode(tag)}
 	rq = urllib2.Request('http://api.giphy.com/v1/gifs/random?' + urllib.urlencode(query))
@@ -34,6 +35,6 @@ def rnd_gif(tag=''):
 		msg = json.loads(resp.read())
 		return msg['data']['url']
 	else:
-		print('Request to Wit failed for message:', message_text)
+		print('Request to Giphy failed for message:', message_text)
 		print('Status code:', resp.getcode())  # print the code
 		return ''
