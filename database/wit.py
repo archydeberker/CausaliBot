@@ -12,7 +12,7 @@ def understand_string(message_text):
 
 	# make sure the message_text is allowed to have spaces
 	query = {'q': message_text}
-	rq = urllib2.Request('https://api.wit.ai/message?q='+urllib.urlencode(query))
+	rq = urllib2.Request('https://api.wit.ai/message?' + urllib.urlencode(query))
 	rq.add_header("Authorization", "Bearer FS4CJQVZGWFNJ525V5JJ7NVR5SWBDUIG")
 	rq.add_header('Content-Type', 'text/plain')
 

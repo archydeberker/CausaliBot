@@ -51,6 +51,7 @@ def webhook():
 
                     if new_user:
                         print("NEW USER! WOOHOO!")
+                        send_image(sender_id)
                         send_message(sender_id, msg.rnd('greeting') + ' ' + txt_dict['first_name'] + ' nice to meet you! Welcome to Causali!')
                         send_message(sender_id, 'Type "start experiment" to get started, or "help" for all commands.')
                         # store the user in the DB
@@ -137,6 +138,34 @@ def send_message(recipient_id, message_text):
         log(r.status_code)
         log(r.text)
 
+
+def send_image(recipient_id, image_url=msg.rnd_gif()):
+    """ Sends an image at the location of the image_url. 
+    If none given, sends a random giphy gif
+    """
+    log("sending IMAGE to {recipient}: {text}".format(recipient=recipient_id, text=image_url))
+
+    params = {
+        "access_token": os.environ["PAGE_ACCESS_TOKEN"]
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+    data = json.dumps({
+        "recipient": {
+            "id": recipient_id
+        },
+        "message": {
+            "type": "image",
+            "payload": {
+                "url": image_url
+            }
+        }
+    })
+    r = requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=data)
+    if r.status_code != 200:
+        log(r.status_code)
+        log(r.text)
 
 def log(message):  # simple wrapper for logging to stdout on heroku
     print str(message)
