@@ -57,6 +57,7 @@ def webhook():
                         db_utils.fb_store_user(txt_dict['first_name'], txt_dict['last_name'], sender_id, txt_dict['timezone'])
                     else:  # if returning user
                         exp_state = db_utils.fb_user_check_experiment_signup_status(sender_id)
+                        print(exp_state)
 
                         ####### EXPLICIT COMMANDS
                         if message_text.lower() == 'start experiment':
@@ -73,11 +74,11 @@ def webhook():
                                 send_message(sender_id, "What time would you like your meditation prompt email?")
                         elif message_text.lower() == 'help':
                             send_message(sender_id, 
-"""Try any of these:
-"start experiment"
-"delete experiment"
-"delete user"
-""")
+                            """Try any of these:
+                            "start experiment"
+                            "delete experiment"
+                            "delete user"
+                            """)
                         elif message_text.lower() == 'delete experiment':
                             r = db_utils.fb_delete_experiment(sender_id)
                             if r.deleted_count == 0:
@@ -91,7 +92,7 @@ def webhook():
                             send_message(sender_id, "Why you go? Your experiments and user details been removed :(")
 
                         # The next ones test against state of the experiment, so all explicit commands need to go above this line
-                        elif exp_state == 'incomplete':
+                        elif exp_state in ['instructionTime','responseTime']:
                             get_next_info(sender_id, message_text)
                         elif exp_state == 'no experiment':  # if user doesn't have experiment but didn't say one of the commands, then God knows what they want
                             send_message(sender_id, "You're not making yourself clear. Unless you say \"start experiment\", I'll have no clue what you're saying. Or try \"help\"")
