@@ -5,23 +5,24 @@ Also contains one function to give you a random element
 import random
 import urllib2
 import urllib
+import json
 
-messages = {
-	'greeting' : ['Hi', 'Hey', 'Hola'],
-	}
 
 
 def rnd(var):
 	""" var is the name you want a random element from.
 	Example: msg.rnd('greeting')
 	"""
+	messages = {
+	'greeting' : ['Hi', 'Hey', 'Hola'],
+	}
 	return random.choice(messages[var])
 
 
 def rnd_gif(tag=''):
 	""" get random Giphy gif, or random based on tag given. 
 	https://github.com/Giphy/GiphyAPI#random-endpoint
-	
+
 	Returns the URL of the gif
 	"""
 	# uses a public beta API key
