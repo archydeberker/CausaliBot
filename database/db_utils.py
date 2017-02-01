@@ -552,47 +552,6 @@ def fb_update_user(fb_id, key, value):
 	})
 
 
-def fb_check_experiment_setup(fb_id):
-	""" Check experiments for user and return what information is needed next
-
-	Input:
-		fb_id: string with user FB id
-	Returns:
-		string indicating what information is needed next. One of:
-			instructionTime
-			responseTime
-			chocksAway (everything is complete and ready to set up experiment)
-	"""
-
-	print('CHECKING WHERE IN THE EXPERIMENT THE USER IS')
-
-	# check how many experiments the user has
-	_, _, collection = open_connection(collectionName='experiments')
-	user_exp = collection.find({"fb_id": fb_id})
-	print(str(user_exp.count()) + ' experiments found for user ' + fb_id)
-	# if >1, something is wrong, so delete all and start over
-	if user_exp.count() > 1:
-		print('deleting experiment because theres more than one')
-		collection.delete({"fb_id": fb_id})
-	# if 0, set up new experiment with null times
-	if user_exp.count() == 0:
-		print('creating new experiment because theres none for this user')
-		fb_init_experiment_meditation(fb_id)
-
-	# user_exp may have changed to query again
-	user_exp = collection.find_one({"fb_id": fb_id})
-	print("PRINTING EXPERIMENT RECORD FOR THIS USER")
-	print(user_exp)
-	if user_exp['instructionTimeLocal'] is None:
-		return 'instructionTime'
-	elif user_exp['responseTimeLocal'] is None:
-		return 'responseTime'
-	else:
-		return 'chocksAway'
-
-
-
-
 
 # References
 ## Bulk operations in mongoDB: http://stackoverflow.com/a/36213728
