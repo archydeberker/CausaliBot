@@ -12,6 +12,7 @@ from flask import Flask, request
 app = Flask(__name__)
 
 
+
 @app.route('/', methods=['GET'])
 def verify():
     # when the endpoint is registered as a webhook, it must echo back
@@ -125,7 +126,7 @@ def send_message(recipient_id, message_text):
 
     '''
 
-    # log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
+    log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
 
     params = {
         "access_token": os.environ["PAGE_ACCESS_TOKEN"]
@@ -154,7 +155,7 @@ def send_image(recipient_id, image_url=msg.rnd_gif(tag='science')):
 
     If none given, sends a random giphy gif
     """
-    # log("sending IMAGE to {recipient}: {text}".format(recipient=recipient_id, text=image_url))
+    log("sending IMAGE to {recipient}: {text}".format(recipient=recipient_id, text=image_url))
 
     params = {
         "access_token": os.environ["PAGE_ACCESS_TOKEN"]

@@ -24,6 +24,9 @@ def rnd_gif(tag=''):
 	https://github.com/Giphy/GiphyAPI#random-endpoint
 
 	Returns the URL of the gif
+
+	TODO make the gif actually random, check that the arguments here are not also global/packages making the code return the same gif over and over. 
+
 	"""
 	
 	# uses a public beta API key
