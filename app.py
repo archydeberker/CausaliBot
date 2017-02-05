@@ -205,6 +205,7 @@ def get_next_info(sender_id,message_text):
             db_utils.fb_update_experiment(sender_id, 'instructionTimeLocal', timepoint)
             send_message(sender_id,"And what time would you like me to ask how you're feeling?")
         else:
+            send_message(sender_id, "Sorry, I didn't quite understand that.")
             send_message(sender_id, "What time would you like your meditation prompt email?")
 
     elif action=='responseTime':
@@ -216,6 +217,7 @@ def get_next_info(sender_id,message_text):
             send_message(sender_id,"We've got everything we need for take-off, so hold on to your gonads!")
    
         else:
+            send_message(sender_id, "Sorry, I didn't quite understand that.")
             send_message(sender_id,"What time would you like me to ask how you're feeling?")
 
 
@@ -239,7 +241,6 @@ def format_timepoint(message_text):
                 return wit.timestamp_to_simple_string(msg_dict)
     # value not found, return None
     else:
-        send_message(sender_id, "Sorry, I didn't quite understand that.")
         return None
 
 
