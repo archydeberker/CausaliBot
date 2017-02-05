@@ -144,7 +144,7 @@ def send_message(recipient_id, message_text):
         log(r.text)
 
 
-def send_image(recipient_id, image_url=msg.rnd_gif(tag='science')):
+def send_image(recipient_id, image_url=msg.rnd_gif(tag='experiment')):
     """ Sends an image at the location of the image_url. 
 
     Facebook docs: https://developers.facebook.com/docs/messenger-platform/send-api-reference/image-attachment
