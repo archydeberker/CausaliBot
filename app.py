@@ -79,6 +79,7 @@ def webhook():
 start experiment
 delete experiment
 delete user
+gif me science
                             """
                             )
                         elif message_text.lower() == 'delete experiment':
@@ -92,7 +93,8 @@ delete user
                             db_utils.fb_delete_experiment(sender_id)
                             r = db_utils.fb_delete_user(sender_id)
                             send_message(sender_id, "Why you go? Your experiments and user details been removed :(")
-
+                        elif message_text.lower() == 'gif me science':
+                            send_image(sender_id)
                         # The next ones test against state of the experiment, so all explicit commands need to go above this line
                         elif exp_state in ['instructionTime','responseTime']:
                             get_next_info(sender_id, message_text)
