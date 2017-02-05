@@ -51,8 +51,8 @@ def webhook():
 
                     if new_user:
                         print("NEW USER! WOOHOO!")
-                        send_image(sender_id)
                         send_message(sender_id, msg.rnd('greeting') + ' ' + txt_dict['first_name'] + ' nice to meet you! Welcome to Causali!')
+                        send_image(sender_id)
                         send_message(sender_id, 'Type "start experiment" to get started, or "help" for all commands.')
                         # store the user in the DB
                         db_utils.fb_store_user(txt_dict['first_name'], txt_dict['last_name'], sender_id, txt_dict['timezone'])
@@ -116,6 +116,11 @@ def webhook():
 
 
 def send_message(recipient_id, message_text):
+    '''Send plain text message to recipient through facebook.
+
+    Documentation: https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
+
+    '''
 
     log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
 
@@ -139,7 +144,7 @@ def send_message(recipient_id, message_text):
         log(r.text)
 
 
-def send_image(recipient_id, image_url=msg.rnd_gif()):
+def send_image(recipient_id, image_url=msg.rnd_gif(tag='science')):
     """ Sends an image at the location of the image_url. 
 
     Facebook docs: https://developers.facebook.com/docs/messenger-platform/send-api-reference/image-attachment
