@@ -30,7 +30,7 @@ def webhook():
     # endpoint for processing incoming messaging events
 
     data = request.get_json()
-    log(data)  # you may not want to log every incoming message in production, but it's good for testing
+    # log(data)  # you may not want to log every incoming message in production, but it's good for testing
 
     if data["object"] == "page":
         for entry in data["entry"]:
@@ -43,14 +43,14 @@ def webhook():
                     # Get the user's ID
                     txt = urllib2.urlopen("https://graph.facebook.com/v2.6/"+sender_id+"?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token="+os.environ["PAGE_ACCESS_TOKEN"]).read()
                     txt_dict = json.loads(txt)
-                    print("PRINTING THE USER INFO")
-                    print(txt_dict)
+                    # print("PRINTING THE USER INFO")
+                    # print(txt_dict)
                     
                     # Check whether sender is in the database.
                     new_user = db_utils.fb_check_new_user(sender_id)
 
                     if new_user:
-                        print("NEW USER! WOOHOO!")
+                        # print("NEW USER! WOOHOO!")
                         send_message(sender_id, msg.rnd('greeting') + ' ' + txt_dict['first_name'] + ', nice to meet you! Welcome to Causali!')
                         send_image(sender_id)
                         send_message(sender_id, 'Type "start experiment" to get started, or "help" for all commands.')
@@ -58,7 +58,7 @@ def webhook():
                         db_utils.fb_store_user(txt_dict['first_name'], txt_dict['last_name'], sender_id, txt_dict['timezone'])
                     else:  # if returning user
                         exp_state = db_utils.fb_user_check_experiment_signup_status(sender_id)
-                        print(exp_state)
+                        # print(exp_state)
 
                         ####### EXPLICIT COMMANDS
                         if message_text.lower() == 'start experiment':
@@ -125,7 +125,7 @@ def send_message(recipient_id, message_text):
 
     '''
 
-    log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
+    # log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
 
     params = {
         "access_token": os.environ["PAGE_ACCESS_TOKEN"]
@@ -154,7 +154,7 @@ def send_image(recipient_id, image_url=msg.rnd_gif(tag='science')):
 
     If none given, sends a random giphy gif
     """
-    log("sending IMAGE to {recipient}: {text}".format(recipient=recipient_id, text=image_url))
+    # log("sending IMAGE to {recipient}: {text}".format(recipient=recipient_id, text=image_url))
 
     params = {
         "access_token": os.environ["PAGE_ACCESS_TOKEN"]
@@ -193,7 +193,7 @@ def get_next_info(sender_id,message_text):
 
     # Check database status, This will initiate the experiment if not already done so, and return a flag as to the next necessary argument
     action=db_utils.fb_user_check_experiment_signup_status(sender_id)
-    log(action)
+    # log(action)
 
     if action=='instructionTime': # need to get first timepoint
     # TO DO: currently, after it has sucessfully returned a 'gotcha' message for meditation time, it still returns flag 'instructionTime' on next msg...
@@ -201,7 +201,7 @@ def get_next_info(sender_id,message_text):
 
         # Try and get timepoint from current message
         timepoint = format_timepoint(message_text)
-        print('Time parsed:', timepoint)
+        # print('Time parsed:', timepoint)
         if timepoint is not None:
             send_message(sender_id, "Gotcha, "+str(timepoint))
             db_utils.fb_update_experiment(sender_id, 'instructionTimeLocal', timepoint)
@@ -212,7 +212,7 @@ def get_next_info(sender_id,message_text):
 
     elif action=='responseTime':
         timepoint = format_timepoint(message_text)
-        print('Time parsed:', timepoint)
+        # print('Time parsed:', timepoint)
         if timepoint is not None:
             send_message(sender_id, "Aye aye, captain, we'll be sailing at "+str(timepoint))
             db_utils.fb_update_experiment(sender_id, 'responseTimeLocal', timepoint)
@@ -231,15 +231,15 @@ def format_timepoint(message_text):
     '''   
 
     msg_dict = wit.understand_string(message_text)
-    log(msg_dict)
+    # log(msg_dict)
     
     # check if the correct values are returned by 
     if 'datetime' in msg_dict['entities']:
-        log('found datetime')
+        # log('found datetime')
         if 'values' in msg_dict['entities']['datetime'][0]:
-            log('found values')
+            # log('found values')
             if 'value' in msg_dict['entities']['datetime'][0]['values']:  # could not contain value if it detects e.g. a time range.
-                log('found value') 
+                # log('found value') 
                 return wit.timestamp_to_simple_string(msg_dict)
     # value not found, return None
     else:

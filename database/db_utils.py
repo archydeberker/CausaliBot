@@ -522,7 +522,7 @@ def fb_update_experiment(fb_id, key, value):
 	key: string indicating the key to update
 	value: the new value
 	"""
-	print('Updating experiment record with ' + key + ' set to ' + str(value))
+	# print('Updating experiment record with ' + key + ' set to ' + str(value))
 	_, _, collection = open_connection(collectionName='experiments')
 	return collection.update_one({'fb_id': fb_id}, {
 		'$set': {
@@ -542,7 +542,7 @@ def fb_update_user(fb_id, key, value):
 	key: string indicating the key to update
 	value: the new value
 	"""
-	print('Updating experiment record with ' + key + ' set to ' + str(value))
+	# print('Updating experiment record with ' + key + ' set to ' + str(value))
 	_, _, collection = open_connection(collectionName='users')
 	return collection.update_one({'fb_id': fb_id}, {
 		'$set': {
