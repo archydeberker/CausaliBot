@@ -56,7 +56,12 @@ def webhook():
                         send_image(sender_id)
                         send_message(sender_id, 'Type "start experiment" to get started, or "help" for all commands.')
                         # store the user in the DB
-                        db_utils.fb_store_user(txt_dict['first_name'], txt_dict['last_name'], sender_id, txt_dict['timezone'])
+                        db_utils.fb_store_user(
+                            first_name=txt_dict['first_name'], 
+                            second_name=txt_dict['last_name'], 
+                            fb_id=sender_id, 
+                            timezone_offset=txt_dict['timezone']
+                            )
                     else:  # if returning user
                         exp_state = db_utils.fb_user_check_experiment_signup_status(sender_id)
                         # print(exp_state)
@@ -92,8 +97,9 @@ gif me science
                                 send_message(sender_id, "Science has left the building :(")
                         elif message_text.lower() == "delete user":
                             db_utils.fb_delete_experiment(sender_id)
-                            r = db_utils.fb_delete_user(sender_id)
-                            send_message(sender_id, "Why you go? Your experiments and user details been removed :(")
+                            db_utils.fb_delete_user(sender_id)  
+                            db_utils.fb_delete_trials(sender_id)  # should probably only delete incomplete ones.
+                            send_message(sender_id, "Why you go? Your experiments, trials, and user details been removed :(")
                         elif message_text.lower() == 'gif me science':
                             send_image(sender_id)
                         # The next ones test against state of the experiment, so all explicit commands need to go above this line
@@ -218,6 +224,13 @@ def get_next_info(sender_id,message_text):
             send_message(sender_id, "Aye aye, captain, we'll be sailing at "+str(timepoint))
             db_utils.fb_update_experiment(sender_id, 'responseTimeLocal', timepoint)
             send_message(sender_id,"We've got everything we need for take-off, so hold on to your gonads!")
+            # actually implement all the trials
+            success = dbutils.fb_init_trials(sender_id)
+            if success:
+                send_message(sender_id,"We've lined up your experiment for execution. All you have to do is sit back and wait for further instructions!")
+                send_image(recipient_id, image_url=msg.rnd_gif(tag='relax chill'))
+            else:
+                send_message(sender_id,"Something's gone horribly wrong, and your experiment may or may not have survived. An admin will be in touch.")
    
         else:
             send_message(sender_id, "Sorry, I didn't quite understand that.")

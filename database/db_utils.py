@@ -56,17 +56,17 @@ def init_trials(fb_id, experiment_id):
 	This assumes that the experiment already exists in the database, and simply reads out the experiments and makes sure all reminders are set, timezones are corrected for,
 	and order of conditions is randomised
 	Inputs
-		fb_id 		string, FACEBOOK id
+		fb_id 			string, FACEBOOK id
 		experiment_id 	string, not an ObjectId
 
 	Returns
-		input_result	array of insert results
+		bool indicating success (True) or failure (False)
 	"""
 	# get a handle to the users collection and experiments collection
-	client, db_handle, users_coll = open_connection(collectionName='users')
+	_, db_handle, users_coll = open_connection(collectionName='users')
 	experiments_coll = db_handle['experiments']
 	# get information about the experiment and store it into the variable
-	exp = experiments_coll.find_one({"_id": ObjectId(experiment_id)})
+	exp = experiments_coll.find_one({"fb_id": fb_id})
 	# get information about the user and store it into variable using next()
 	user = users_coll.find_one({"fb_id": fb_id})
 	
@@ -139,7 +139,8 @@ def init_trials(fb_id, experiment_id):
 			'random_number': np.random.random(),
 			'hash_sha256': hashlib.sha256(str(np.random.random())).hexdigest() # add a random hash, because if you don't add the np.random.random() then the same user doing experiment twice will go messed up
 		}))
-	return insert_result
+
+	return True
 
 
 def get_uncompleted_instructions(include_past=True, include_future=False, sort='chronological', limit=0):
@@ -438,7 +439,7 @@ def fb_user_check_experiment_signup_status(fb_id):
 		return 'complete'
 
 
-def fb_store_user(first_name, second_name, fb_id, timezone='Europe/London'):
+def fb_store_user(first_name, second_name, fb_id, timezone_offset=0):
 	""" Store user info in a collection. 
 	As I understand it you don't have to sanitise inputs in MongoDB unless you're concatenating strings.
 	Instead of using the has we can use the objectID in the mongoDB database, which is unique. 
@@ -461,7 +462,8 @@ def fb_store_user(first_name, second_name, fb_id, timezone='Europe/London'):
 		'fb_id': fb_id,
 		'created_at': datetime.datetime.utcnow(),
 		'last_modified': datetime.datetime.utcnow(),
-		'timezone': timezone,
+		'timezone_offset': float(timezone_offset),
+		'timezone': get_approx_timezone(float(timezone_offset)),
 		'subscribed': True  # whether the user is active/subscribed
 		})
 
@@ -489,6 +491,20 @@ def fb_delete_experiment(fb_id):
 	return coll.delete_many({'fb_id': fb_id})
 
 
+def fb_delete_trials(fb_id):
+	"""Delete all trials for user
+
+	Input
+		fb_id		ID of user to clear
+	Returns
+		a delete_many result
+	"""
+	_, _, coll = open_connection(collectionName='trials')
+	result = coll.delete_many({'fb_id': fb_id})
+	return result
+
+
+
 def fb_init_experiment_meditation(fb_id, instructionTime=None, responseTime=None):
 	""" Code to initialise the meditation experiment in the database. Helpful to identify what variables to store and how to name them
 	
@@ -512,6 +528,103 @@ def fb_init_experiment_meditation(fb_id, instructionTime=None, responseTime=None
 		'last_modified': datetime.datetime.utcnow(),
 	})
 	return insert_result
+
+
+def fb_init_trials(fb_id):
+	""" Initialises all the trials for an experiment for a user, reading a document in the 'experiments' database and populating the 'trials' collection.
+
+	This assumes that the experiment already exists in the database, and simply reads out the experiments and makes sure all reminders are set, timezones are corrected for,
+	and order of conditions is randomised.
+
+	Timezones
+	Facebook gives you offset from UTC, not the timezone. So we need to store our times in UTC.
+
+	Inputs
+		fb_id 			string, FACEBOOK id
+		experiment_id 	string, not an ObjectId
+
+	Returns
+		bool indicating success (True) or failure (False)
+	"""
+	# get a handle to the users collection and experiments collection
+	_, db_handle, users_coll = open_connection(collectionName='users')
+	experiments_coll = db_handle['experiments']
+	# get information about the experiment and store it into the variable
+	exp = experiments_coll.find_one({"fb_id": fb_id})
+	# get information about the user and store it into variable using next()
+	user = users_coll.find_one({"fb_id": fb_id})
+	
+	# create an array of all the condition strings
+	condition_array = []
+	for ix, con in enumerate(exp["conditions"]): # iterate over each condition in the experiment
+		# append the condition with appropriate number of replications
+		condition_array += ([con] * exp["nTrials"][ix])
+	# shuffle the array depending on requested method, either 1000 times or until satisfied. Wouldn't want to crash the server
+	satisfied = False
+	iterations = 0
+	while (not satisfied) and (iterations<1000):
+		# increase iterations 
+		iterations += 1
+		# select randomisation method
+		if exp["randomise"] == 'complete':
+			# completely random, no restraints on ordering
+			np.random.shuffle(condition_array)
+			satisfied = True
+		elif exp["randomise"] == 'max3':	
+			# shuffle in some way that maximally 3 times in a row the same condition is given
+			np.random.shuffle(condition_array)
+			# check if restraint is satisfied
+			# https://stackoverflow.com/questions/29081226/limit-the-number-of-repeats-in-pseudo-random-python-list
+			if all(len(list(group)) <= 3 for _, group in groupby(condition_array)):
+				satisfied = True
+	if not satisfied:
+		print('did not reach criterion for randomising; using current state of condition_array instead')
+	
+	# make a pytz object to localise the dates and times. Some crucial notes on timezones:
+	# - Once a date-aware object is written to Mongo it will be transformed to UTC. 
+	# - create a timezone object using pytz.timezone('string')
+	# - Transform an existing tz-aware datetime to another timezone using .astimezone(tz_object)
+	tzUser = pytz.timezone(user['timezone_offset'])
+	tzUTC = pytz.utc
+	# get current datetime in user's timezone
+	nowLocal = tzUTC.localize(datetime.datetime.utcnow()).astimezone(tzUser)
+	# get today's date so we know when 'tomorrow' is for this user. 
+	dateLocal = nowLocal.date()
+	tomorrowLocal = dateLocal + datetime.timedelta(days=1)
+	# get the first condition email and response request in the user's local time, and localise it so that when it's 
+	# STORED IN MONGO IT'S SET TO UTC AUTOMATICALLY. After that we can then just add 24 hours to each of these
+	first_instruction_datetime = tzUser.localize(
+		datetime.datetime.combine(  # combine tomorrow's date with the time to send the message
+			tomorrowLocal, # tomorrow's date in user's tz
+			datetime.datetime.strptime(exp["instructionTimeLocal"], '%H:%M').time()  # the time of day to send the prompt datetime.datetime.strptime(instructionTime, '%H:%M').time() 
+		)
+	)
+	first_response_datetime = tzUser.localize(
+		datetime.datetime.combine(  # combine tomorrow's date with the time to send the message
+			tomorrowLocal, # tomorrow's date in user's tz
+			datetime.datetime.strptime(exp["responseTimeLocal"], '%H:%M').time()  # the time of day to send the prompt datetime.datetime.strptime(instructionTime, '%H:%M').time() 
+		)
+	)
+	# insert each trial into database.
+	insert_result = []
+	for ix, condition in enumerate(condition_array):
+		insert_result.append(db_handle['trials'].insert_one({
+			'fb_id': fb_id,
+			'experiment_id': experiment_id,
+			'trial_number': ix,
+			'condition': condition,
+			'instruction_sent': False,
+			'response_request_sent': False,
+			'response_given': False,
+			'instruction_date': first_instruction_datetime + datetime.timedelta(hours=ix * exp["ITI"]), # add one day for each next trial. Will be transformed to UTC.
+			'response_date': first_response_datetime + datetime.timedelta(hours=ix * exp["ITI"]), # ditto
+			'created_at': datetime.datetime.utcnow(),
+			'last_modified': datetime.datetime.utcnow(),
+			'random_number': np.random.random(),
+			'hash_sha256': hashlib.sha256(str(np.random.random())).hexdigest() # add a random hash, because if you don't add the np.random.random() then the same user doing experiment twice will go messed up
+		}))
+
+	return True
 
 
 def fb_update_experiment(fb_id, key, value):
@@ -553,6 +666,22 @@ def fb_update_user(fb_id, key, value):
 		}
 	})
 
+
+def get_approx_timezone(offset):
+	''' Get a possible timezone based on a user offset.
+
+	Assumes utc if it can't detect the timezone.
+
+	Will not be always correct but will do a decent job for now.
+	'''
+
+	utc_offset = datetime.timedelta(hours=offset)  # +5:30
+	now = datetime.datetime.now(pytz.utc)  # current time
+	tz = [tz.zone for tz in map(pytz.timezone, pytz.all_timezones_set) if now.astimezone(tz).utcoffset() == utc_offset]
+	if len(tz) == 0:
+		tz = pytz.utc
+
+	return tz
 
 
 # References

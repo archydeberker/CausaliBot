@@ -48,3 +48,4 @@ def rnd_gif(tag=''):
 		print('Request to Giphy failed with code')
 		print('Status code:', resp.getcode())  # print the code
 		return ''
+
