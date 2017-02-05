@@ -142,6 +142,8 @@ def send_message(recipient_id, message_text):
 def send_image(recipient_id, image_url=msg.rnd_gif()):
     """ Sends an image at the location of the image_url. 
 
+    Facebook docs: https://developers.facebook.com/docs/messenger-platform/send-api-reference/image-attachment
+
     If none given, sends a random giphy gif
     """
     log("sending IMAGE to {recipient}: {text}".format(recipient=recipient_id, text=image_url))
@@ -169,6 +171,7 @@ def send_image(recipient_id, image_url=msg.rnd_gif()):
     if r.status_code != 200:
         log(r.status_code)
         log(r.text)
+
 
 def log(message):  # simple wrapper for logging to stdout on heroku
     print str(message)
