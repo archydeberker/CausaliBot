@@ -40,8 +40,10 @@ def rnd_gif(tag=''):
 
 	if resp.getcode() == 200:  # means success
 		msg_content = json.loads(resp.read())
+		giphy_url = msg_content['data']['image_url']
+		print('URL retrieved from Giphy:', giphy_url)
 		# use image_url instead of URL so Facebook recognises it's a gif.
-		return msg_content['data']['image_url']
+		return giphy_url
 	else:
 		print('Request to Giphy failed with code')
 		print('Status code:', resp.getcode())  # print the code
