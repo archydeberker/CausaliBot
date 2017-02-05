@@ -245,7 +245,7 @@ def format_timepoint(message_text):
     '''   
 
     msg_dict = wit.understand_string(message_text)
-    # log(msg_dict)
+    log(msg_dict)
     
     # check if the correct values are returned by 
     if 'datetime' in msg_dict['entities']:
