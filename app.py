@@ -51,7 +51,7 @@ def webhook():
 
                     if new_user:
                         print("NEW USER! WOOHOO!")
-                        send_message(sender_id, msg.rnd('greeting') + ' ' + txt_dict['first_name'] + ' nice to meet you! Welcome to Causali!')
+                        send_message(sender_id, msg.rnd('greeting') + ' ' + txt_dict['first_name'] + ', nice to meet you! Welcome to Causali!')
                         send_image(sender_id)
                         send_message(sender_id, 'Type "start experiment" to get started, or "help" for all commands.')
                         # store the user in the DB

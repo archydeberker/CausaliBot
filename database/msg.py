@@ -27,7 +27,10 @@ def rnd_gif(tag=''):
 	"""
 	
 	# uses a public beta API key
-	query = {'api_key': 'dc6zaTOxFJmzC', 'tag': urllib.urlencode(tag)}
+	query = {
+		'api_key': 'dc6zaTOxFJmzC', 
+		'tag': tag
+		}
 	rq = urllib2.Request('http://api.giphy.com/v1/gifs/random?' + urllib.urlencode(query))
 	resp = urllib2.urlopen(rq)
 
