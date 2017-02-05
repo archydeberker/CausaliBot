@@ -76,10 +76,11 @@ def webhook():
                         elif message_text.lower() == 'help':
                             send_message(sender_id, 
                             """Try any of these:
-                            "start experiment"
-                            "delete experiment"
-                            "delete user"
-                            """)
+start experiment
+delete experiment
+delete user
+                            """
+                            )
                         elif message_text.lower() == 'delete experiment':
                             r = db_utils.fb_delete_experiment(sender_id)
                             if r.deleted_count == 0:
@@ -233,7 +234,9 @@ def format_timepoint(message_text):
         log('found datetime')
         if 'values' in msg_dict['entities']['datetime'][0]:
             log('found values')
-            return wit.timestamp_to_simple_string(msg_dict)
+            if 'value' in msg_dict['entities']['datetime'][0]['values']  # could not contain 'value' if it detects e.g. a time range.
+                log('found value') 
+                return wit.timestamp_to_simple_string(msg_dict)
     # value not found, return None
     else:
         send_message(sender_id, "Sorry, I didn't quite understand that.")
