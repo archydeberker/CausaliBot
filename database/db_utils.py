@@ -50,99 +50,6 @@ def close_connection(client):
 	client.close()
 
 
-def init_trials(fb_id, experiment_id):
-	""" Initialises all the trials for an experiment for a user, reading a document in the 'experiments' database and populating the 'trials' collection.
-
-	This assumes that the experiment already exists in the database, and simply reads out the experiments and makes sure all reminders are set, timezones are corrected for,
-	and order of conditions is randomised
-	Inputs
-		fb_id 			string, FACEBOOK id
-		experiment_id 	string, not an ObjectId
-
-	Returns
-		bool indicating success (True) or failure (False)
-	"""
-	# get a handle to the users collection and experiments collection
-	_, db_handle, users_coll = open_connection(collectionName='users')
-	experiments_coll = db_handle['experiments']
-	# get information about the experiment and store it into the variable
-	exp = experiments_coll.find_one({"fb_id": fb_id})
-	# get information about the user and store it into variable using next()
-	user = users_coll.find_one({"fb_id": fb_id})
-	
-	# create an array of all the condition strings
-	condition_array = []
-	for ix, con in enumerate(exp["conditions"]): # iterate over each condition in the experiment
-		# append the condition with appropriate number of replications
-		condition_array += ([con] * exp["nTrials"][ix])
-	# shuffle the array depending on requested method, either 1000 times or until satisfied. Wouldn't want to crash the server
-	satisfied = False
-	iterations = 0
-	while (not satisfied) and (iterations<1000):
-		# increase iterations 
-		iterations += 1
-		# select randomisation method
-		if exp["randomise"] == 'complete':
-			# completely random, no restraints on ordering
-			np.random.shuffle(condition_array)
-			satisfied = True
-		elif exp["randomise"] == 'max3':	
-			# shuffle in some way that maximally 3 times in a row the same condition is given
-			np.random.shuffle(condition_array)
-			# check if restraint is satisfied
-			# https://stackoverflow.com/questions/29081226/limit-the-number-of-repeats-in-pseudo-random-python-list
-			if all(len(list(group)) <= 3 for _, group in groupby(condition_array)):
-				satisfied = True
-	if not satisfied:
-		print('did not reach criterion for randomising; using current state of condition_array instead')
-	
-	# make a pytz object to localise the dates and times. Some crucial notes on timezones:
-	# - Once a date-aware object is written to Mongo it will be transformed to UTC. 
-	# - create a timezone object using pytz.timezone('string')
-	# - Transform an existing tz-aware datetime to another timezone using .astimezone(tz_object)
-	tzUser = pytz.timezone(user['timezone'])
-	tzUTC = pytz.utc
-	# get current datetime in user's timezone
-	nowLocal = tzUTC.localize(datetime.datetime.utcnow()).astimezone(tzUser)
-	# get today's date so we know when 'tomorrow' is for this user. 
-	dateLocal = nowLocal.date()
-	tomorrowLocal = dateLocal + datetime.timedelta(days=1)
-	# get the first condition email and response request in the user's local time, and localise it so that when it's 
-	# STORED IN MONGO IT'S SET TO UTC AUTOMATICALLY. After that we can then just add 24 hours to each of these
-	first_instruction_datetime = tzUser.localize(
-		datetime.datetime.combine(  # combine tomorrow's date with the time to send the message
-			tomorrowLocal, # tomorrow's date in user's tz
-			datetime.datetime.strptime(exp["instructionTimeLocal"], '%H:%M').time()  # the time of day to send the prompt datetime.datetime.strptime(instructionTime, '%H:%M').time() 
-		)
-	)
-	first_response_datetime = tzUser.localize(
-		datetime.datetime.combine(  # combine tomorrow's date with the time to send the message
-			tomorrowLocal, # tomorrow's date in user's tz
-			datetime.datetime.strptime(exp["responseTimeLocal"], '%H:%M').time()  # the time of day to send the prompt datetime.datetime.strptime(instructionTime, '%H:%M').time() 
-		)
-	)
-	# insert each trial into database.
-	insert_result = []
-	for ix, condition in enumerate(condition_array):
-		insert_result.append(db_handle['trials'].insert_one({
-			'fb_id': fb_id,
-			'experiment_id': experiment_id,
-			'trial_number': ix,
-			'condition': condition,
-			'instruction_sent': False,
-			'response_request_sent': False,
-			'response_given': False,
-			'instruction_date': first_instruction_datetime + datetime.timedelta(hours=ix * exp["ITI"]), # add one day for each next trial. Will be transformed to UTC.
-			'response_date': first_response_datetime + datetime.timedelta(hours=ix * exp["ITI"]), # ditto
-			'created_at': datetime.datetime.utcnow(),
-			'last_modified': datetime.datetime.utcnow(),
-			'random_number': np.random.random(),
-			'hash_sha256': hashlib.sha256(str(np.random.random())).hexdigest() # add a random hash, because if you don't add the np.random.random() then the same user doing experiment twice will go messed up
-		}))
-
-	return True
-
-
 def get_uncompleted_instructions(include_past=True, include_future=False, sort='chronological', limit=0):
 	""" Looks at 'trials' database and return a list of uncompleted instructions 
 
@@ -330,47 +237,6 @@ def trials_completed(filter={}):
 	query.update(filter)
 	# search and return the number of retrieved docs
 	return trials_collection.find(query).count()
-
-
-def delete_user(_id):
-	"""Delete a user
-	
-	Input
-		_id			string, will be converted to ObjectId
-
-	Returns
-		DeleteResult result (.deleted_count)
-	"""
-	_, _, coll = open_connection(collectionName='users')
-	return coll.delete_one({'_id': ObjectId(_id)})
-
-
-def delete_experiment(_id):
-	"""Delete an experiment
-
-	Input
-		_id 		string, will be converted to ObjectId
-
-	Returns
-		DeleteResult
-	"""
-	_, _, coll = open_connection(collectionName='experiments')
-	return coll.delete_one({'_id': ObjectId(_id)})
-
-
-def delete_trials(trial_list):
-	"""Takes a list of trial id strings and delete these trials
-
-	Input
-		trial_list		an iterable that contains _id strings
-	Returns
-		a list of DeleteResults
-	"""
-	_, _, coll = open_connection(collectionName='trials')
-	result = []
-	for _id in trial_list:
-		result.append(coll.delete_one({'_id': ObjectId(_id)}))
-	return result
 
 
 def unsubscribe_user(email):
@@ -682,6 +548,16 @@ def get_approx_timezone(offset):
 		tz = pytz.utc
 
 	return tz
+
+
+def parse_quick_reply(messaging_event):
+	''' Parses a response by the user to a quick reply asked to us
+	The message text and payload tells you what question was asked and what was answered, respectively.
+
+	'''
+	fb_id = messaging_event["sender"]["id"]
+	message_text = messaging_event["message"]["text"]
+	quick_reply_payload = message_text = messaging_event["message"]["quick_reply"]["payload"]
 
 
 # References
