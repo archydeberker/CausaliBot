@@ -22,6 +22,11 @@ URI = os.getenv('MONGO_URI', 'mongodb://localhost')
 db = URI.split('/')[-1]
 
 # function definitions that can be used by other scripts
+def log(message):  # simple wrapper for logging to stdout on heroku
+    print str(message)
+    sys.stdout.flush()
+
+
 def open_connection(collectionName, URI=URI, db=db):
 	""" Opens connection and returns connection details
 	Inputs

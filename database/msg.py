@@ -8,6 +8,10 @@ import urllib
 import json
 
 
+def log(message):  # simple wrapper for logging to stdout on heroku
+    print str(message)
+    sys.stdout.flush()
+    
 
 def rnd_text_string(var):
 	""" var is the name you want a random element from.
@@ -77,13 +81,16 @@ def send_plain_text(recipient_id, message_text):
         log(r.text)
 
 
-def send_image(recipient_id, image_url=rnd_gif(tag='science')):
+def send_image(recipient_id, image_url=None):
     """ Sends an image at the location of the image_url. 
 
     Facebook docs: https://developers.facebook.com/docs/messenger-platform/send-api-reference/image-attachment
 
     If none given, sends a random giphy gif
     """
+    if image_url is None:
+        image_url = rnd_gif(tag='science')
+
     log("sending IMAGE to {recipient}: {text}".format(recipient=recipient_id, text=image_url))
 
     params = {
