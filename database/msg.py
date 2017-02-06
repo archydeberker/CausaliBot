@@ -7,6 +7,8 @@ import urllib2
 import urllib
 import json
 import sys
+import os
+import requests
 
 
 def log(message):  # simple wrapper for logging to stdout on heroku
