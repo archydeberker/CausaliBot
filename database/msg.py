@@ -146,7 +146,7 @@ def send_quick_reply(recipient_id, prompt, quick_replies):
       }
     ]
     '''
-    log("sending quick reply to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
+    log("sending quick reply to {recipient}: {text}".format(recipient=recipient_id, text=prompt))
 
     params = {
         "access_token": os.environ["PAGE_ACCESS_TOKEN"]
@@ -159,7 +159,7 @@ def send_quick_reply(recipient_id, prompt, quick_replies):
             "id": recipient_id
         },
         "message": {
-            "text": message_text,
+            "text": prompt,
             "quick_replies": quick_replies
         }
     })
