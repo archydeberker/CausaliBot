@@ -55,7 +55,7 @@ def webhook():
                         msg.send_plain_text(sender_id, msg.rnd_text_string('greeting') + ' ' + txt_dict['first_name'] + ', nice to meet you! Welcome to Causali!')
                         msg.send_image(sender_id)
                         msg.send_plain_text(sender_id, 'Type "start experiment" to get started, or "help" for all commands.')
-                        msg.send_quick_reply(sender_id, 'How handomse are you?', [
+                        msg.send_quick_reply(sender_id, 'How handsome are you?', [
                           {
                             "content_type":"text",
                             "title":"Very",

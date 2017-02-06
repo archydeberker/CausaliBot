@@ -563,6 +563,7 @@ def parse_quick_reply(messaging_event):
 	fb_id = messaging_event["sender"]["id"]
 	message_text = messaging_event["message"]["text"]
 	quick_reply_payload = message_text = messaging_event["message"]["quick_reply"]["payload"]
+	log('quick reply received: ' + messaging_event["message"]["quick_reply"]["payload"])
 
 
 # References
