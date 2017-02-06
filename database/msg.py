@@ -51,14 +51,12 @@ def rnd_gif(tag=''):
 
 
 def send_plain_text(recipient_id, message_text):
-	'''Send plain text message to recipient through facebook.
+    '''Send plain text message to recipient through facebook.
 
     Documentation: https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
 
     '''
-
     log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
-
     params = {
         "access_token": os.environ["PAGE_ACCESS_TOKEN"]
     }
@@ -113,18 +111,18 @@ def send_image(recipient_id, image_url=rnd_gif(tag='science')):
         log(r.text)
 
 
-def send_quick_reply(recipient_id, prompt, quick_replies)
-	''' Give someone a few options to pick from
-	https://developers.facebook.com/docs/messenger-platform/send-api-reference/quick-replies
+def send_quick_reply(recipient_id, prompt, quick_replies):
+    ''' Give someone a few options to pick from
+    https://developers.facebook.com/docs/messenger-platform/send-api-reference/quick-replies
 
-	Note that the response to this message comes in through the Message Received callback. 
+    Note that the response to this message comes in through the Message Received callback. 
 
-	Input
-		recipient_id		string with facebook ID
-		prompt 				string with prompt
-		quick_replies		list of dicts, each dict has content_type, title, payload, and optional image_url
+    Input
+    	recipient_id		string with facebook ID
+    	prompt 				string with prompt
+    	quick_replies		list of dicts, each dict has content_type, title, payload, and optional image_url
 
-	Example quick_replies:
+    Example quick_replies:
     quick_replies = [
       {
         "content_type":"text",
@@ -137,7 +135,7 @@ def send_quick_reply(recipient_id, prompt, quick_replies)
         "payload":"green"
       }
     ]
-	'''
+    '''
     log("sending quick reply to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
 
     params = {
@@ -153,7 +151,7 @@ def send_quick_reply(recipient_id, prompt, quick_replies)
         "message": {
             "text": message_text,
             "quick_replies": quick_replies
-	    }
+        }
     })
     r = requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=data)
     if r.status_code != 200:
