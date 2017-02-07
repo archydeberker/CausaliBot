@@ -168,7 +168,7 @@ def get_next_info(sender_id,message_text):
         timepoint = format_timepoint(message_text)
         # print('Time parsed:', timepoint)
         if timepoint is not None:
-            send_message(sender_id, "Gotcha, "+str(timepoint))
+            msg.send_plain_text(sender_id, "Gotcha, "+str(timepoint))
             db_utils.fb_update_experiment(sender_id, 'instructionTimeLocal', timepoint)
             msg.send_plain_text(sender_id,"And what time would you like me to ask how you're feeling?")
         else:
