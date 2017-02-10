@@ -92,7 +92,7 @@ def webhook():
                                 if r.acknowledged:
                                     msg.send_plain_text(sender_id, 'Thanks, we\'ve stored your response.')
                                 else:
-                                    msg.send_plain_text(sender_id, 'Something went wrong we didn\'t store your response ¯\_(ツ)_/¯')
+                                    msg.send_plain_text(sender_id, 'Something went wrong we didn\'t store your response =/')
 
                         else:  # not a quick reply
                             exp_state = db_utils.fb_user_check_experiment_signup_status(sender_id)
