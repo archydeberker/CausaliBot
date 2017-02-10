@@ -59,17 +59,17 @@ def webhook():
                           {
                             "content_type":"text",
                             "title":"Unhappy",
-                            "payload": {"happiness_at_intro": "unhappy"}
+                            "payload": json.dumps({"happiness_at_intro": "unhappy"})
                           },
                           {
                             "content_type":"text",
                             "title":"Neither unhappy nor happy",
-                            "payload":{"happiness_at_intro": "neutral"}
+                            "payload":json.dumps({"happiness_at_intro": "neutral"})
                           },
                           {
                             "content_type":"text",
                             "title":"Happy",
-                            "payload":{"happiness_at_intro": "happy"}
+                            "payload":json.dumps({"happiness_at_intro": "happy"})
                           }
                         ])
                         # store the user in the DB
@@ -88,7 +88,11 @@ def webhook():
                             ### Cycle through different responses
 
                             if question == 'happiness_at_intro':
-                                db_utils.fb_log_entry(sender_id, question, response)
+                                r = db_utils.fb_log_entry(sender_id, question, response)
+                                if r.acknowledged:
+                                    msg.send_plain_text(sender_id, 'Thanks, we\'ve stored your response.')
+                                else:
+                                    msg.send_plain_text(sender_id, 'Something went wrong we didn\'t store your response ¯\_(ツ)_/¯')
 
                         else:  # not a quick reply
                             exp_state = db_utils.fb_user_check_experiment_signup_status(sender_id)
