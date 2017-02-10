@@ -538,6 +538,18 @@ def fb_update_user(fb_id, key, value):
 	})
 
 
+def fb_log_entry(fb_id, key, value):
+	'''Store a log item for a user
+
+	'''
+	_, _, collection = open_connection(collectionName='user_logs')
+	return collection.insert_one({
+		'fb_id': fb_id,
+		'created_at': datetime.datetime.now(pytz.utc),
+		key: value
+		})
+
+
 def get_approx_timezone(offset):
 	''' Get a possible timezone based on a user offset.
 

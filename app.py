@@ -55,16 +55,21 @@ def webhook():
                         msg.send_plain_text(sender_id, msg.rnd_text_string('greeting') + ' ' + txt_dict['first_name'] + ', nice to meet you! Welcome to Causali!')
                         msg.send_image(sender_id)
                         msg.send_plain_text(sender_id, 'Type "start experiment" to get started, or "help" for all commands.')
-                        msg.send_quick_reply(sender_id, 'How handsome are you?', [
+                        msg.send_quick_reply(sender_id, 'How happy do you feel right now?', [
                           {
                             "content_type":"text",
-                            "title":"Very",
-                            "payload":"very"
+                            "title":"Unhappy",
+                            "payload": {"happiness_at_intro": "unhappy"}
                           },
                           {
                             "content_type":"text",
-                            "title":"Enormously",
-                            "payload":"enormously"
+                            "title":"Neither unhappy nor happy",
+                            "payload":{"happiness_at_intro": "neutral"}
+                          },
+                          {
+                            "content_type":"text",
+                            "title":"Happy",
+                            "payload":{"happiness_at_intro": "happy"}
                           }
                         ])
                         # store the user in the DB
@@ -79,7 +84,12 @@ def webhook():
                         if "quick_reply" in messaging_event["message"]:
                             # give the whole object, including sender id, message text, and quick replies
                             # Will also send the required messages back to user.
-                            db_utils.parse_quick_reply(messaging_event)
+                            question, response = db_utils.parse_quick_reply(messaging_event)
+                            ### Cycle through different responses
+
+                            if question == 'happiness_at_intro':
+                                db_utils.fb_log_entry(sender_id, question, response)
+
                         else:  # not a quick reply
                             exp_state = db_utils.fb_user_check_experiment_signup_status(sender_id)
                             # print(exp_state)
