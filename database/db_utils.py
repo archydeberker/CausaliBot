@@ -579,7 +579,7 @@ def parse_quick_reply(messaging_event):
         response        the value for the answer provided in the original payload
     '''
     # this is the payload defined for this answer
-    payload = json.loads(messaging_event['quick_reply']['payload'])
+    payload = json.loads(messaging_event['message']['quick_reply']['payload'])
     # now let us agree that payload should always be a dictionary of which
     # the first key defines what message this was a response to, and the value of that
     # key contains all the information to process the response.
