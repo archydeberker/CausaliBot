@@ -568,14 +568,25 @@ def get_approx_timezone(offset):
 
 
 def parse_quick_reply(messaging_event):
-	''' Parses a response by the user to a quick reply asked to us
-	The message text and payload tells you what question was asked and what was answered, respectively.
+    ''' First port of call when a quick reply comes in. 
 
-	'''
-	fb_id = messaging_event["sender"]["id"]
-	message_text = messaging_event["message"]["text"]
-	quick_reply_payload = message_text = messaging_event["message"]["quick_reply"]["payload"]
-	log('quick reply received: ' + messaging_event["message"]["quick_reply"]["payload"])
+    Args
+        messaging_event         contains the contents and metadata of the message
+
+    Return
+        question        string with the question identifier
+        response        the value for the answer provided in the original payload
+    '''
+    # this is the payload defined for this answer
+    payload = json.loads(messaging_event['quick_reply']['payload'])
+    # now let us agree that payload should always be a dictionary of which
+    # the first key defines what message this was a response to, and the value of that
+    # key contains all the information to process the response.
+    assert len(payload) == 1, "Was expecting payload to only have a single key indicating the question"
+    question = payload.keys()[0]
+    response = payload[question]
+    return question, response
+
 
 
 # References

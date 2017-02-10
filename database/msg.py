@@ -147,8 +147,8 @@ def send_quick_reply(recipient_id, prompt, quick_replies):
     ]
     '''
     log("sending quick reply to {recipient}: {text}".format(recipient=recipient_id, text=prompt))
-    assert all([len(dic['payload']) == 1 for dic in quick_replies]), "All payload items should be a dict with a single key indicating the question"
-    assert len(set([dic['payload'].keys()[0] for dic in quick_replies])) == 1, "All payload items should have the same key in the dict indicating the question type"
+    assert all([len(json.loads(dic['payload'])) == 1 for dic in quick_replies]), "All payload items should be a dict with a single key indicating the question"
+    assert len(set([json.loads(dic['payload']).keys()[0] for dic in quick_replies])) == 1, "All payload items should have the same key in the dict indicating the question type"
     
     params = {
         "access_token": os.environ["PAGE_ACCESS_TOKEN"]
@@ -171,22 +171,3 @@ def send_quick_reply(recipient_id, prompt, quick_replies):
         log(r.text)
 
 
-def parse_quick_reply(messaging_event):
-    ''' First port of call when a quick reply comes in. 
-
-    Args
-        messaging_event         contains the contents and metadata of the message
-
-    Return
-        question        string with the question identifier
-        response        the value for the answer provided in the original payload
-    '''
-    # this is the payload defined for this answer
-    payload = json.loads(messaging_event['quick_reply']['payload'])
-    # now let us agree that payload should always be a dictionary of which
-    # the first key defines what message this was a response to, and the value of that
-    # key contains all the information to process the response.
-    assert len(payload) == 1, "Was expecting payload to only have a single key indicating the question"
-    question = payload.keys()[0]
-    response = payload[question]
-    return question, response
