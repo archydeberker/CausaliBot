@@ -171,3 +171,17 @@ def send_quick_reply(recipient_id, prompt, quick_replies):
         log(r.text)
 
 
+def send_quick_reply_rating(fb_id, prompt, question_identifier, point_range=(0, 10)):
+    ''' Sends a quick reply rating request
+
+    Args
+        prompt                  string with prompt
+        question_identifier     used in the payload to identify the question
+        point_range             tuple with bounds for range of allowable answers. 
+
+    '''
+    quick_replies = [
+        {'content_type': 'text', 'title': str(rating), 'payload':json.dumps({question_identifier: str(rating)})} 
+        for rating in range(point_range[0], point_range[1]+1)
+    ]
+    send_quick_reply(fb_id, prompt, quick_replies)

@@ -55,23 +55,11 @@ def webhook():
                         msg.send_plain_text(sender_id, msg.rnd_text_string('greeting') + ' ' + txt_dict['first_name'] + ', nice to meet you! Welcome to Causali!')
                         msg.send_image(sender_id)
                         msg.send_plain_text(sender_id, 'Type "start experiment" to get started, or "help" for all commands.')
-                        msg.send_quick_reply(sender_id, 'How happy do you feel right now?', [
-                          {
-                            "content_type":"text",
-                            "title":"Unhappy",
-                            "payload": json.dumps({"happiness_at_intro": "unhappy"})
-                          },
-                          {
-                            "content_type":"text",
-                            "title":"Meh",
-                            "payload":json.dumps({"happiness_at_intro": "neutral"})
-                          },
-                          {
-                            "content_type":"text",
-                            "title":"Happy",
-                            "payload":json.dumps({"happiness_at_intro": "happy"})
-                          }
-                        ])
+                        msg.send_quick_reply_rating(
+                            fb_id = sender_id, 
+                            prompt = 'On a scale from 0 to 10, where 0 is miserable and 10 is as happy as you\'ve ever been, how happy do you feel right now?', 
+                            question_identifier = 'intro_happiness_rating'
+                            )
                         # store the user in the DB
                         db_utils.fb_store_user(
                             first_name=txt_dict['first_name'], 
@@ -86,13 +74,14 @@ def webhook():
                             # Will also send the required messages back to user.
                             question, response = db_utils.parse_quick_reply(messaging_event)
                             ### Cycle through different responses
+                            # generic logging for now. 
 
-                            if question == 'happiness_at_intro':
-                                r = db_utils.fb_log_entry(sender_id, question, response)
-                                if r.acknowledged:
-                                    msg.send_plain_text(sender_id, 'Thanks, we\'ve stored your response.')
-                                else:
-                                    msg.send_plain_text(sender_id, 'Something went wrong we didn\'t store your response =/')
+                            r = db_utils.fb_log_entry(sender_id, question, response)
+                            if r.acknowledged:
+                                msg.send_plain_text(sender_id, 'Thanks, we\'ve stored your response.')
+                            else:
+                                msg.send_plain_text(sender_id, 'Something went wrong, we didn\'t store your response =/')
+                            
 
                         else:  # not a quick reply
                             exp_state = db_utils.fb_user_check_experiment_signup_status(sender_id)
