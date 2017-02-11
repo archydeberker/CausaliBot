@@ -7,7 +7,7 @@ from database import db_utils
 from database import wit
 from database import msg
 import requests
-import datetme
+import datetime
 from flask import Flask, request
 
 app = Flask(__name__)
@@ -129,7 +129,7 @@ def webhook():
                                 err,log_name,log_value= parse_log_input(message_text.lower()) # parse message
                                 if err==0:
                                     db_utils.fb_log_entry(sender_id, log_name, log_value) # store in database in generic user_logs table
-                                    msg.send_plain_text(sender_id, "Successfully logged %s as %s. come onnnn!!!!"%(log_name,log_value))
+                                    msg.send_plain_text(sender_id, "Successfully logged %s as %s. Come onnnn!!!!"%(log_name,log_value))
                                 else:
                                     msg.send_plain_text(sender_id, "Hmmm. Please log like this: log 'something' 'value of something', such as 'log breakfast eggs'")
                             
