@@ -7,6 +7,7 @@ from database import db_utils
 from database import wit
 from database import msg
 import requests
+import datetme
 from flask import Flask, request
 
 app = Flask(__name__)
@@ -49,7 +50,7 @@ def webhook():
                     
                     # Check whether sender is in the database.
                     new_user = db_utils.fb_check_new_user(sender_id)
-                    
+
                     if new_user:
                         # print("NEW USER! WOOHOO!")
                         msg.send_plain_text(sender_id, msg.rnd_text_string('greeting') + ' ' + txt_dict['first_name'] + ', nice to meet you! Welcome to Causali!')
@@ -182,6 +183,10 @@ def parse_log_input(message):
         error_flag = 1
         log_name = ''
         log_value = ''
+
+    # deal with special case where log_value is 'time', meaning user wants to log current time
+    if log_value=='time':
+        log_value = str(datetime.datetime.utcnow())
 
     return error_flag,log_name,log_value
 
