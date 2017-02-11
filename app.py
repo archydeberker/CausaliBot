@@ -49,7 +49,7 @@ def webhook():
                     
                     # Check whether sender is in the database.
                     new_user = db_utils.fb_check_new_user(sender_id)
-
+                    print(message_text.lower()) # print incoming message to log
                     if new_user:
                         # print("NEW USER! WOOHOO!")
                         msg.send_plain_text(sender_id, msg.rnd_text_string('greeting') + ' ' + txt_dict['first_name'] + ', nice to meet you! Welcome to Causali!')
@@ -128,7 +128,7 @@ def webhook():
                                 err,log_name,log_value= parse_log_input(message_text.lower()) # parse message
                                 if err==0:
                                     db_utils.fb_log_entry(sender_id, log_name, log_value) # store in database in generic user_logs table
-                                    msg.send_plain_text(sender_id, "Successfully logged %s as %s"%(log_name,log_value))
+                                    msg.send_plain_text(sender_id, "Successfully logged %s as %s. come onnnn!!!!"%(log_name,log_value))
                                 else:
                                     msg.send_plain_text(sender_id, "Hmmm. Please log like this: log 'something' 'value of something', such as 'log breakfast eggs'")
                             
