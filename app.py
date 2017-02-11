@@ -175,7 +175,8 @@ def parse_log_input(message):
     # Get word after log, and the word after that
     try:
         log_name = msg_list[msg_list.index('log')+1]
-        log_value = msg_list[msg_list.index('log')+2:] # take everything after the log name as innput
+        log_value = msg_list[msg_list.index('log')+2:]
+        log_value = str(' '.join(log_value))  # take everything after the log name as input, format as single string (us str command to remove unicode marker)
         error_flag = 0 
     except:
         error_flag = 1
