@@ -540,7 +540,8 @@ def fb_update_user(fb_id, key, value):
 
 
 def fb_log_entry(fb_id, key, value):
-	'''Store a log item for a user
+	'''Store a log item for a user. Note that value can sometimes be the current time (if user uses)
+	the keyword 'time'.
 
 	'''
 	_, _, collection = open_connection(collectionName='user_logs')
