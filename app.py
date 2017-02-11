@@ -49,7 +49,7 @@ def webhook():
                     
                     # Check whether sender is in the database.
                     new_user = db_utils.fb_check_new_user(sender_id)
-                    print(message_text.lower()) # print incoming message to log
+                    
                     if new_user:
                         # print("NEW USER! WOOHOO!")
                         msg.send_plain_text(sender_id, msg.rnd_text_string('greeting') + ' ' + txt_dict['first_name'] + ', nice to meet you! Welcome to Causali!')
