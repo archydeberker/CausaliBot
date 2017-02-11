@@ -127,7 +127,7 @@ def webhook():
                                 
                                 err,log_name,log_value= parse_log_input(message_text.lower()) # parse message
                                 if err==0:
-                                    db_utils.fb_log_entry(fb_id=sender_id, log_name, log_value) # store in database in generic user_logs table
+                                    db_utils.fb_log_entry(sender_id, log_name, log_value) # store in database in generic user_logs table
                                     msg.send_plain_text(sender_id, "Successfully logged %s as %s"%(log_name,log_value))
                                 else:
                                     msg.send_plain_text(sender_id, "Hmmm. Please log like this: log 'something' 'value of something', such as 'log breakfast eggs'")
@@ -165,7 +165,9 @@ def log(message):  # simple wrapper for logging to stdout on heroku
 def parse_log_input(message):
     ''' This takes a message which contains the word 'log' and attempts to parse out the log name and value that the user wishes to insert.
     This is currently based on the assumption that the word after 'log' denotes the log name, and all the words after that are the things to be logged.
-    Currently this process is rather type-agnostic: aren't doing any work to figure out strings vs. numbers etc. '''
+    Currently this process is rather type-agnostic: aren't doing any work to figure out strings vs. numbers etc. 
+
+    # TO DO (11/2/17) : how to deal with multi-word lognames?'''
 
     # Convert message to list of words
     msg_list = re.sub("[^\w]", " ",  message).split() # here any non-alphanumeric characters are replaced by spaces
@@ -173,7 +175,7 @@ def parse_log_input(message):
     # Get word after log, and the word after that
     try:
         log_name = msg_list[msg_list.index('log')+1]
-        log_value = msg_list[msg_list.index('log')+2]
+        log_value = msg_list[msg_list.index('log')+2:] # take everything after the log name as innput
         error_flag = 0 
     except:
         error_flag = 1
