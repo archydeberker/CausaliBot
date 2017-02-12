@@ -463,10 +463,7 @@ def fb_init_trials(fb_id):
 	# - Once a date-aware object is written to Mongo it will be transformed to UTC. 
 	# - create a timezone object using pytz.timezone('string')
 	# - Transform an existing tz-aware datetime to another timezone using .astimezone(tz_object)
-	log(user['timezone_offset'])
-	log(get_approx_timezone(user['timezone_offset']))
 	tzUser = pytz.timezone(get_approx_timezone(user['timezone_offset']))
-	log(tzUser)
 	tzUTC = pytz.utc
 	# get current datetime in user's timezone
 	nowLocal = tzUTC.localize(datetime.datetime.utcnow()).astimezone(tzUser)
@@ -492,7 +489,7 @@ def fb_init_trials(fb_id):
 	for ix, condition in enumerate(condition_array):
 		insert_result.append(db_handle['trials'].insert_one({
 			'fb_id': fb_id,
-			'experiment_id': experiment_id,
+			'experiment_id': exp['_id'],
 			'trial_number': ix,
 			'condition': condition,
 			'instruction_sent': False,
@@ -503,7 +500,7 @@ def fb_init_trials(fb_id):
 			'created_at': datetime.datetime.utcnow(),
 			'last_modified': datetime.datetime.utcnow(),
 			'random_number': np.random.random(),
-			'hash_sha256': hashlib.sha256(str(np.random.random())).hexdigest() # add a random hash, because if you don't add the np.random.random() then the same user doing experiment twice will go messed up
+			'hash_sha256': hashlib.sha256(str(np.random.random())).hexdigest() # add a random hash
 		}))
 
 	return True
