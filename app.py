@@ -57,11 +57,11 @@ def webhook():
                         msg.send_plain_text(sender_id, msg.rnd_text_string('greeting') + ' ' + txt_dict['first_name'] + ', nice to meet you! Welcome to Causali!')
                         msg.send_image(sender_id)
                         msg.send_plain_text(sender_id, 'Type "start experiment" to get started, or "help" for all commands.')
-                        msg.send_quick_reply_rating(
-                            fb_id = sender_id, 
-                            prompt = 'On a scale from 0 to 10, where 0 is miserable and 10 is as happy as you\'ve ever been, how happy do you feel right now?', 
-                            question_identifier = 'intro_happiness_rating'
-                            )
+                        # msg.send_quick_reply_rating(
+                        #     fb_id = sender_id, 
+                        #     prompt = 'On a scale from 0 to 10, where 0 is miserable and 10 is as happy as you\'ve ever been, how happy do you feel right now?', 
+                        #     question_identifier = 'intro_happiness_rating'
+                        #     )
                         # store the user in the DB
                         db_utils.fb_store_user(
                             first_name=txt_dict['first_name'], 
@@ -124,7 +124,8 @@ def webhook():
                                 db_utils.fb_delete_user(sender_id)  
                                 db_utils.fb_delete_logs(sender_id)  
                                 db_utils.fb_delete_trials(sender_id)  # should probably only delete incomplete ones.
-                                msg.send_plain_text(sender_id, "Your experiments, trials, logs, and user details been removed :(")
+                                msg.send_plain_text(sender_id, "Your experiments, trials, logs, and user details been removed")
+                                msg.send_image(sender_id, msg.rnd_gif('sad goodbye'))
                             elif message_text.lower() == 'gif me science':
                                 msg.send_image(sender_id)
                             elif 'log' in message_text.lower(): # any sentence that contains the three letters log
