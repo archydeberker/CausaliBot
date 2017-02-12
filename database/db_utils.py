@@ -568,11 +568,17 @@ def get_approx_timezone(offset):
 	Assumes utc if it can't detect the timezone.
 
 	Will not be always correct but will do a decent job for now.
+
+	Args
+		offset 		a number or string indicating offset
+
+	Returns
+		tz 			a pytz timezone object
 	'''
 
 	utc_offset = datetime.timedelta(hours=offset)  # +5:30
 	now = datetime.datetime.now(pytz.utc)  # current time
-	tz = [tz.zone for tz in map(pytz.timezone, pytz.all_timezones_set) if now.astimezone(tz).utcoffset() == utc_offset]
+	tz = [tz.zone for tz in map(pytz.timezone, pytz.all_timezones_set) if now.astimezone(tz).utcoffset() == utc_offset][0]
 	if len(tz) == 0:
 		tz = pytz.utc
 

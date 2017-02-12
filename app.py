@@ -55,7 +55,7 @@ def webhook():
                     if new_user:
                         # print("NEW USER! WOOHOO!")
                         msg.send_plain_text(sender_id, msg.rnd_text_string('greeting') + ' ' + txt_dict['first_name'] + ', nice to meet you! Welcome to Causali!')
-                        msg.send_image(sender_id)
+                        msg.send_image(sender_id, msg.rnd_gif('welcome hi'))
                         msg.send_plain_text(sender_id, 'Type "start experiment" to get started, or "help" for all commands.')
                         # msg.send_quick_reply_rating(
                         #     fb_id = sender_id, 
