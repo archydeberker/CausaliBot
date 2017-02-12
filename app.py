@@ -133,7 +133,7 @@ def webhook():
                                 if not err:
                                     db_utils.fb_log_entry(sender_id, log_name, log_value) # store in database in generic user_logs table
                                     msg.send_plain_text(sender_id, "Successfully logged %s as %s. Come onnnn!!!!" % (log_name, log_value))
-                                    msg.send_image(sender_id, rnd_gif('success'))
+                                    msg.send_image(sender_id, msg.rnd_gif('success'))
                                 else:
                                     msg.send_plain_text(sender_id, 
                                         "Hmmm. Please log like this: \"log <something> <value of something>\", \
