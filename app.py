@@ -108,6 +108,7 @@ def webhook():
     delete experiment
     delete user
     gif me science
+    log breakfast eggs
                                 """
                                 )
                             elif message_text.lower() == 'delete experiment':
@@ -124,14 +125,19 @@ def webhook():
                                 msg.send_plain_text(sender_id, "Why you go? Your experiments, trials, and user details been removed :(")
                             elif message_text.lower() == 'gif me science':
                                 msg.send_image(sender_id)
-                            elif 'log' in message_text.lower(): # flexible function for logging data
+                            elif 'log' in message_text.lower(): # any sentence that contains the three letters log
+                                # flexible function for logging data
                                 
-                                err,log_name,log_value= parse_log_input(message_text.lower()) # parse message
-                                if err==0:
+                                err, log_name, log_value= parse_log_input(message_text.lower()) # parse message
+                                if not err:
                                     db_utils.fb_log_entry(sender_id, log_name, log_value) # store in database in generic user_logs table
                                     msg.send_plain_text(sender_id, "Successfully logged %s as %s. Come onnnn!!!!"%(log_name,log_value))
                                 else:
-                                    msg.send_plain_text(sender_id, "Hmmm. Please log like this: log 'something' 'value of something', such as 'log breakfast eggs'")
+                                    msg.send_plain_text(sender_id, 
+                                        "Hmmm. Please log like this: \"log <something> <value of something>\", \
+                                        such as \"log breakfast eggs\". To store a timestamp for an event, \
+                                        use the special word \"time\", for example \"log morning_shower time\""
+                                    )
                             
                             ##### The next ones test against state of the experiment, so all explicit commands need to go above this line #####
                             elif exp_state in ['instructionTime','responseTime']:
@@ -163,12 +169,22 @@ def log(message):  # simple wrapper for logging to stdout on heroku
     print str(message)
     sys.stdout.flush()
 
+
 def parse_log_input(message):
     ''' This takes a message which contains the word 'log' and attempts to parse out the log name and value that the user wishes to insert.
     This is currently based on the assumption that the word after 'log' denotes the log name, and all the words after that are the things to be logged.
     Currently this process is rather type-agnostic: aren't doing any work to figure out strings vs. numbers etc. 
 
-    # TO DO (11/2/17) : how to deal with multi-word lognames?'''
+    # TO DO (11/2/17) : how to deal with multi-word lognames? Example: log morning run 5k. PS note: we need to tell people to use underscores - those words make very poor keys for the DB with spaces in them...
+
+    Args
+        message         a single string that contains the word 'log' somewhere
+
+    Return
+        error_flag      True if the log name and value were not correctly retrieved, False otherwise
+        log_name        string containing the first word after 'log', supposedly the key in the key-value to be logged (e.g. 'breakfast' in 'log breakfast eggs and toast')
+        log_value       string containing all the words after the key of the log (e.g. 'eggs and toast' in the example above). EXCEPTION: of the log_value=='time' it becomes a string containing the UTC timestamp now.
+    '''
 
     # Convert message to list of words
     msg_list = re.sub("[^\w]", " ",  message).split() # here any non-alphanumeric characters are replaced by spaces
@@ -176,11 +192,11 @@ def parse_log_input(message):
     # Get word after log, and the word after that
     try:
         log_name = msg_list[msg_list.index('log')+1]
-        log_value = msg_list[msg_list.index('log')+2:]
-        log_value = str(' '.join(log_value))  # take everything after the log name as input, format as single string (us str command to remove unicode marker)
-        error_flag = 0 
+        log_value = msg_list[msg_list.index('log')+2:]  # note the semi-colon to capture every word after!
+        log_value = str(' '.join(log_value))  # take everything after the log name as input, format as single string (use str command to remove unicode marker)
+        error_flag = False
     except:
-        error_flag = 1
+        error_flag = True
         log_name = ''
         log_value = ''
 
@@ -188,7 +204,8 @@ def parse_log_input(message):
     if log_value=='time':
         log_value = str(datetime.datetime.utcnow())
 
-    return error_flag,log_name,log_value
+    return error_flag, log_name, log_value
+
 
 def get_next_info(sender_id,message_text):
     ''' This looks up the state of the user in the database, and finishes collecting
