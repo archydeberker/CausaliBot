@@ -121,8 +121,9 @@ def webhook():
                             elif message_text.lower() == "delete user":
                                 db_utils.fb_delete_experiment(sender_id)
                                 db_utils.fb_delete_user(sender_id)  
+                                db_utils.fb_delete_logs(sender_id)  
                                 db_utils.fb_delete_trials(sender_id)  # should probably only delete incomplete ones.
-                                msg.send_plain_text(sender_id, "Why you go? Your experiments, trials, and user details been removed :(")
+                                msg.send_plain_text(sender_id, "Your experiments, trials, logs, and user details been removed :(")
                             elif message_text.lower() == 'gif me science':
                                 msg.send_image(sender_id)
                             elif 'log' in message_text.lower(): # any sentence that contains the three letters log
@@ -131,7 +132,8 @@ def webhook():
                                 err, log_name, log_value= parse_log_input(message_text.lower()) # parse message
                                 if not err:
                                     db_utils.fb_log_entry(sender_id, log_name, log_value) # store in database in generic user_logs table
-                                    msg.send_plain_text(sender_id, "Successfully logged %s as %s. Come onnnn!!!!"%(log_name,log_value))
+                                    msg.send_plain_text(sender_id, "Successfully logged %s as %s. Come onnnn!!!!" % (log_name, log_value))
+                                    msg.send_image(sender_id, rnd_gif('success'))
                                 else:
                                     msg.send_plain_text(sender_id, 
                                         "Hmmm. Please log like this: \"log <something> <value of something>\", \
@@ -143,7 +145,7 @@ def webhook():
                             elif exp_state in ['instructionTime','responseTime']:
                                 get_next_info(sender_id, message_text)
                             elif exp_state == 'no experiment':  # if user doesn't have experiment but didn't say one of the commands, then God knows what they want
-                                msg.send_plain_text(sender_id, "You're not making yourself clear. Unless you say \"start experiment\", I'll have no clue what you're saying. Or try \"help\"")
+                                msg.send_plain_text(sender_id, "Not sure what you're getting at there. Try \"start experiment\" or \"help\"")
                             elif exp_state == 'complete':  # if they already have complete experiment
                                 msg.send_plain_text(sender_id, "You're already set for the experiment. Try \"help\" if you're really stuck.")
                                 

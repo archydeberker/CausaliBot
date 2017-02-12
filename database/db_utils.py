@@ -375,6 +375,19 @@ def fb_delete_trials(fb_id):
 	result = coll.delete_many({'fb_id': fb_id})
 	return result
 
+def fb_delete_logs(fb_id):
+	"""Delete all logs for user
+
+	Input
+		fb_id		ID of user to clear
+	Returns
+		a delete_many result
+	"""
+	_, _, coll = open_connection(collectionName='user_logs')
+	result = coll.delete_many({'fb_id': fb_id})
+	return result
+
+
 
 
 def fb_init_experiment_meditation(fb_id, instructionTime=None, responseTime=None):
