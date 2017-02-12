@@ -13,6 +13,7 @@ from flask import Flask, request
 app = Flask(__name__)
 
 
+# TODO: if the code crashes anywhere, facebook will keep re-sending the message. How do we prevent FB from doing this? I'd hate a big try-except statement because it'd make debugging a bitch.
 
 @app.route('/', methods=['GET'])
 def verify():
@@ -127,8 +128,6 @@ def webhook():
                             elif message_text.lower() == 'gif me science':
                                 msg.send_image(sender_id)
                             elif 'log' in message_text.lower(): # any sentence that contains the three letters log
-                                # flexible function for logging data
-                                
                                 err, log_name, log_value= parse_log_input(message_text.lower()) # parse message
                                 if not err:
                                     db_utils.fb_log_entry(sender_id, log_name, log_value) # store in database in generic user_logs table
@@ -136,10 +135,8 @@ def webhook():
                                     msg.send_image(sender_id, msg.rnd_gif('success'))
                                 else:
                                     msg.send_plain_text(sender_id, 
-                                        "Hmmm. Please log like this: \"log <something> <value of something>\", \
-                                        such as \"log breakfast eggs\". To store a timestamp for an event, \
-                                        use the special word \"time\", for example \"log morning_shower time\""
-                                    )
+                                        "Hmmm. Please log like this: \"log <something> <value of something>\", such as \"log breakfast eggs and toast\". \
+                                        To store a timestamp for an event, use the special word \"time\", for example \"log morning_shower time\"")
                             
                             ##### The next ones test against state of the experiment, so all explicit commands need to go above this line #####
                             elif exp_state in ['instructionTime','responseTime']:
@@ -178,7 +175,7 @@ def parse_log_input(message):
     Currently this process is rather type-agnostic: aren't doing any work to figure out strings vs. numbers etc. 
 
     # TO DO (11/2/17) : how to deal with multi-word lognames? Example: log morning run 5k. PS note: we need to tell people to use underscores - those words make very poor keys for the DB with spaces in them...
-
+    # TO DO (11/2/17) : understand why this works for string 'log hi'. It logs an empty string - why does it not crash on log_value = msg_list[msg_list.index('log')+2:] ?
     Args
         message         a single string that contains the word 'log' somewhere
 
@@ -240,14 +237,13 @@ def get_next_info(sender_id,message_text):
         if timepoint is not None:
             msg.send_plain_text(sender_id, "Aye aye, captain, we'll be sailing at "+str(timepoint))
             db_utils.fb_update_experiment(sender_id, 'responseTimeLocal', timepoint)
-            msg.send_plain_text(sender_id,"We've got everything we need for take-off, so hold on to your gonads!")
             # actually implement all the trials
-            success = dbutils.fb_init_trials(sender_id)
+            success = db_utils.fb_init_trials(sender_id)
             if success:
                 msg.send_plain_text(sender_id,"We've lined up your experiment for execution. All you have to do is sit back and wait for further instructions!")
                 msg.send_image(recipient_id, image_url=msg.rnd_gif(tag='relax chill'))
             else:
-                msg.send_plain_text(sender_id,"Something's gone horribly wrong, and your experiment may or may not have survived. An admin will be in touch.")
+                msg.send_plain_text(sender_id,"Something's gone horribly wrong, and your experiment may or may not have survived. Find a human ASAP.")
    
         else:
             msg.send_plain_text(sender_id, "Sorry, I didn't quite understand that.")

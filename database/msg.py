@@ -89,7 +89,8 @@ def send_image(recipient_id, image_url=None):
 
     Facebook docs: https://developers.facebook.com/docs/messenger-platform/send-api-reference/image-attachment
 
-    If none given, sends a random giphy gif
+    If none given, sends a random giphy science gif. The reason to use image_url=None instead of calling rnd_gif 
+    in the function definition is that it will always use the same gif if rnd_gif() is used in the function def!
     """
     if image_url is None:
         image_url = rnd_gif(tag='science')

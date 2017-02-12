@@ -15,14 +15,11 @@ from itertools import groupby
 import pytz
 
 
-
-
 # find the database URI. If not available in the environment, use local mongodb host
 URI = os.getenv('MONGO_URI', 'mongodb://localhost')
 # get the name of the database: either causali or causali-staging (or localhost).
 db = URI.split('/')[-1]
 
-# function definitions that can be used by other scripts
 def log(message):  # simple wrapper for logging to stdout on heroku
     print str(message)
     sys.stdout.flush()
@@ -288,8 +285,6 @@ def fb_check_new_user(fb_id):
 	return coll.find({'fb_id': fb_id}).count() == 0
 
 
-## Archy comment: is the below now redundant? See fb_check_experiment_setup below ###
-
 def fb_user_check_experiment_signup_status(fb_id):
 	""" Returns 'no experiment', 'instructionTime', 'responseTime', 'complete', 'multiple'
 
@@ -375,6 +370,7 @@ def fb_delete_trials(fb_id):
 	result = coll.delete_many({'fb_id': fb_id})
 	return result
 
+
 def fb_delete_logs(fb_id):
 	"""Delete all logs for user
 
@@ -386,8 +382,6 @@ def fb_delete_logs(fb_id):
 	_, _, coll = open_connection(collectionName='user_logs')
 	result = coll.delete_many({'fb_id': fb_id})
 	return result
-
-
 
 
 def fb_init_experiment_meditation(fb_id, instructionTime=None, responseTime=None):
@@ -603,6 +597,3 @@ def parse_quick_reply(messaging_event):
     return question, response
 
 
-
-# References
-## Bulk operations in mongoDB: http://stackoverflow.com/a/36213728
