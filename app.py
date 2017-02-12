@@ -245,7 +245,7 @@ def get_next_info(fb_id,message_text):
                 success = db_utils.fb_init_trials(fb_id)
                 if success:
                     msg.send_plain_text(fb_id,"We've lined up your experiment for execution. All you have to do is sit back and wait for further instructions!")
-                    msg.send_image(fb_id, image_url=msg.rnd_gif(tag='relax chill'))
+                    msg.send_image(fb_id, image_url=msg.rnd_gif(tag='relax calm soothing pleasant'))
                 else:
                     msg.send_plain_text(fb_id,"Something's gone horribly wrong, and your experiment may or may not have survived. Find a human ASAP.")
             else:
