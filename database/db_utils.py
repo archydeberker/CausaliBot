@@ -603,3 +603,16 @@ def parse_quick_reply(messaging_event):
     return question, response
 
 
+def check_response_after_instruction(fb_id, responseTime):
+	''' Check if the string in responseTime is after this user's instructionTime
+
+	'''
+	_, _, collection = open_connection(collectionName='experiments')
+	exp = collection.find_one({'fb_id': fb_id})
+	return string_to_datetime_hour_minute(exp['instructionTimeLocal']) < string_to_datetime_hour_minute(responseTime)
+
+
+def string_to_datetime_hour_minute(string):
+	# convert string timestamp (e.g. '07:00') to datetime object
+	return datetime.datetime.strptime(string, '%H:%M')
+

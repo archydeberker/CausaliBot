@@ -236,26 +236,37 @@ def get_next_info(sender_id,message_text):
         timepoint = format_timepoint(message_text)
         # print('Time parsed:', timepoint)
         if timepoint is not None:
-            msg.send_plain_text(sender_id, "Aye aye, captain, we'll be sailing at "+str(timepoint))
-            db_utils.fb_update_experiment(sender_id, 'responseTimeLocal', timepoint)
-            # actually implement all the trials
-            success = db_utils.fb_init_trials(sender_id)
-            if success:
-                msg.send_plain_text(sender_id,"We've lined up your experiment for execution. All you have to do is sit back and wait for further instructions!")
-                msg.send_image(recipient_id, image_url=msg.rnd_gif(tag='relax chill'))
+            # check responseTime is later than instruction
+            correct = db_utils.check_response_after_instruction(fb_id, timepoint)
+            if correct:
+                msg.send_plain_text(sender_id, "Aye aye, captain, we'll be sailing at "+str(timepoint))
+                db_utils.fb_update_experiment(sender_id, 'responseTimeLocal', timepoint)
+                # actually implement all the trials
+                success = db_utils.fb_init_trials(sender_id)
+                if success:
+                    msg.send_plain_text(sender_id,"We've lined up your experiment for execution. All you have to do is sit back and wait for further instructions!")
+                    msg.send_image(sender_id, image_url=msg.rnd_gif(tag='relax chill'))
+                else:
+                    msg.send_plain_text(sender_id,"Something's gone horribly wrong, and your experiment may or may not have survived. Find a human ASAP.")
             else:
-                msg.send_plain_text(sender_id,"Something's gone horribly wrong, and your experiment may or may not have survived. Find a human ASAP.")
-   
+                msg.send_plain_text(sender_id, "Your response time is BEFORE your instruction time - that's not how science works!")
+                msg.send_plain_text(sender_id, "If you messed up completely just type 'delete experiment'.")
+                msg.send_plain_text(sender_id, "Otherwise, let's try again: what time would you like me to ask how you're feeling?")
         else:
             msg.send_plain_text(sender_id, "Sorry, I didn't quite understand that.")
-            msg.send_plain_text(sender_id,"What time would you like me to ask how you're feeling?")
+            msg.send_plain_text(sender_id, "What time would you like me to ask how you're feeling?")
 
 
 def format_timepoint(message_text):
     ''' Return formatted time string based upon message text e.g. '7am'.
     Does so via a call to the Wit.ai interface.
+    
+    Args
+        message_text     message_text (str)
+    
+    Returns
+        None if unsuccessful, otherwise a string with time (e.g. '07:00')
 
-    inputs:     message_text (str)
     '''   
 
     msg_dict = wit.understand_string(message_text)
