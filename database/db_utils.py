@@ -463,10 +463,10 @@ def fb_init_trials(fb_id):
 	# - Once a date-aware object is written to Mongo it will be transformed to UTC. 
 	# - create a timezone object using pytz.timezone('string')
 	# - Transform an existing tz-aware datetime to another timezone using .astimezone(tz_object)
-	logging.info(user['timezone_offset'])
-	logging.info(get_approx_timezone(user['timezone_offset']))
+	log(user['timezone_offset'])
+	log(get_approx_timezone(user['timezone_offset']))
 	tzUser = pytz.timezone(get_approx_timezone(user['timezone_offset']))
-	logging.info(tzUser)
+	log(tzUser)
 	tzUTC = pytz.utc
 	# get current datetime in user's timezone
 	nowLocal = tzUTC.localize(datetime.datetime.utcnow()).astimezone(tzUser)
