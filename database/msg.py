@@ -57,13 +57,13 @@ def rnd_gif(tag=''):
 		return ''
 
 
-def send_plain_text(recipient_id, message_text):
+def send_plain_text(fb_id, message_text):
     '''Send plain text message to recipient through facebook.
 
     Documentation: https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
 
     '''
-    log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
+    log("sending message to {recipient}: {text}".format(recipient=fb_id, text=message_text))
     params = {
         "access_token": os.environ["PAGE_ACCESS_TOKEN"]
     }
@@ -72,7 +72,7 @@ def send_plain_text(recipient_id, message_text):
     }
     data = json.dumps({
         "recipient": {
-            "id": recipient_id
+            "id": fb_id
         },
         "message": {
             "text": message_text
@@ -84,7 +84,7 @@ def send_plain_text(recipient_id, message_text):
         log(r.text)
 
 
-def send_image(recipient_id, image_url=None):
+def send_image(fb_id, image_url=None):
     """ Sends an image at the location of the image_url. 
 
     Facebook docs: https://developers.facebook.com/docs/messenger-platform/send-api-reference/image-attachment
@@ -95,7 +95,7 @@ def send_image(recipient_id, image_url=None):
     if image_url is None:
         image_url = rnd_gif(tag='science')
 
-    log("sending IMAGE to {recipient}: {text}".format(recipient=recipient_id, text=image_url))
+    log("sending IMAGE to {recipient}: {text}".format(recipient=fb_id, text=image_url))
 
     params = {
         "access_token": os.environ["PAGE_ACCESS_TOKEN"]
@@ -105,7 +105,7 @@ def send_image(recipient_id, image_url=None):
     }
     data = json.dumps({
         "recipient": {
-            "id": recipient_id
+            "id": fb_id
         },
         "message": {
             "attachment": {
@@ -122,14 +122,14 @@ def send_image(recipient_id, image_url=None):
         log(r.text)
 
 
-def send_quick_reply(recipient_id, prompt, quick_replies):
+def send_quick_reply(fb_id, prompt, quick_replies):
     ''' Give someone a few options to pick from
     https://developers.facebook.com/docs/messenger-platform/send-api-reference/quick-replies
 
     Note that the response to this message comes in through the Message Received callback. 
 
     Input
-    	recipient_id		string with facebook ID
+    	fb_id		string with facebook ID
     	prompt 				string with prompt
     	quick_replies		list of dicts, each dict has content_type, title, payload, and optional image_url. Payload should be a json
 
@@ -147,7 +147,7 @@ def send_quick_reply(recipient_id, prompt, quick_replies):
       }
     ]
     '''
-    log("sending quick reply to {recipient}: {text}".format(recipient=recipient_id, text=prompt))
+    log("sending quick reply to {recipient}: {text}".format(recipient=fb_id, text=prompt))
     assert all([len(json.loads(dic['payload'])) == 1 for dic in quick_replies]), "All payload items should be a dict with a single key indicating the question"
     assert len(set([json.loads(dic['payload']).keys()[0] for dic in quick_replies])) == 1, "All payload items should have the same key in the dict indicating the question type"
     
@@ -159,7 +159,7 @@ def send_quick_reply(recipient_id, prompt, quick_replies):
     }
     data = json.dumps({
         "recipient": {
-            "id": recipient_id
+            "id": fb_id
         },
         "message": {
             "text": prompt,
