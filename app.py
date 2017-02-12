@@ -237,7 +237,7 @@ def get_next_info(sender_id,message_text):
         # print('Time parsed:', timepoint)
         if timepoint is not None:
             # check responseTime is later than instruction
-            correct = db_utils.check_response_after_instruction(fb_id, timepoint)
+            correct = db_utils.check_response_after_instruction(sender_id, timepoint)
             if correct:
                 msg.send_plain_text(sender_id, "Aye aye, captain, we'll be sailing at "+str(timepoint))
                 db_utils.fb_update_experiment(sender_id, 'responseTimeLocal', timepoint)
