@@ -14,6 +14,8 @@ import pandas as pd
 from itertools import groupby
 import pytz
 
+from database import msg
+
 
 # find the database URI. If not available in the environment, use local mongodb host
 URI = os.getenv('MONGO_URI', 'mongodb://localhost')
@@ -157,7 +159,7 @@ def store_response(trial_hash, response):
 	})
 
 
-def send_outstanding_response_prompts():
+def fb_send_outstanding_response_prompts():
 	"""Uses get_uncompleted_response_prompts() to get to-do list, then sends emails.
 
 	Returns number of emails sent
@@ -174,11 +176,13 @@ def send_outstanding_response_prompts():
 	# at this stage there are outstanding response prompts
 	for prompt in outstanding:
 		# get the user
-		user = users_coll.find_one({'_id': ObjectId(prompt['fb_id'])})
-		result = email_defs.probe_meditation(trialHash=prompt['hash_sha256'], name=user['first_name'], email=user['email'])
+		user = users_coll.find_one({'fb_id': prompt['fb_id']})
+		# send the message
+		msg.send_quick_reply_rating(prompt['fb_id'], "How calm are you feeling right now %s?"%user['first_name'], prompt['hash_sha256'], point_range=(0, 10))
+
 
 		# store that instruction is sent, set the time instruction was sent, and update last_modified
-		trials_coll.update_one({"_id": prompt["_id"]}, {
+		trials_coll.update_one({"fb_id": prompt["fb_id"]}, {
 			"$set": {
 				"response_request_sent": True
 			}, 
@@ -189,8 +193,8 @@ def send_outstanding_response_prompts():
 		})
 
 
-def send_outstanding_instructions():
-	"""Uses get_uncompleted_response_prompts() to get to-do list, then sends emails.
+def fb_send_outstanding_instructions():
+	"""Uses get_uncompleted_response_prompts() to get to-do list, then sends facebook messages telling people to meditate or not.
 
 	"""
 	outstanding = get_uncompleted_instructions(include_past=True, include_future=False)
@@ -204,10 +208,12 @@ def send_outstanding_instructions():
 	# at this stage there are outstanding response prompts
 	for prompt in outstanding:
 		# get the user
-		user = users_coll.find_one({"_id": prompt['fb_id']})
-		email_defs.instruct_meditation(name=user['first_name'], email=user['email'], condition=prompt['condition'])
+		user = users_coll.find_one({"fb_id": prompt['fb_id']})
+		# send the message	
+		msg.send_plain_text(prompt['fb_id'], "Hey %s, hope you're having a great day. As part of your meditation experiment with Causali, today you should %s"%(user['first_name'],prompt['condition'].lower()))
+
 		# store in the trials collection that the instruction has been sent and exact datetime
-		trials_coll.update_one({"_id": prompt["_id"]}, {
+		trials_coll.update_one({"fb_id": prompt["fb_id"]}, {
 			"$set": {
 				"instruction_sent": True
 			}, 
@@ -216,6 +222,21 @@ def send_outstanding_instructions():
 				"last_modified": True
 			}
 		})
+
+def fb_instruct_meditation(name, fb_id, condition):
+	"""Instructs a user to do condition.
+
+	Inputs
+		Name
+		Email
+		string which represents this trial's condition
+	Returns
+		result 		should contain info about whether message was successfully sent. Not sure what is in it
+	"""
+
+	msg.send_plain_text(fb_id, "Hope you're having a great day. As part of your meditation experiment with Causali, today you should %s"%condition.lower())
+
+	return result
 
 
 def trials_completed(filter={}):
