@@ -130,7 +130,7 @@ def webhook():
                             elif 'log' in message_text.lower(): # any sentence that contains the three letters log
                                 err, log_name, log_value= parse_log_input(message_text.lower()) # parse message
                                 if not err:
-                                    db_utils.fb_log_entry(fb_id, log_name, log_value) # store in database in generic user_logs table
+                                    user.log_entry(log_name, log_value) # store in database in generic user_logs table
                                     msg.send_plain_text(fb_id, "Successfully logged %s as %s. Come onnnn!!!!" % (log_name, log_value))
                                     msg.send_image(fb_id, msg.rnd_gif('success'))
                                 else:
