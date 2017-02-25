@@ -129,7 +129,7 @@ def send_quick_reply(fb_id, prompt, quick_replies):
     Note that the response to this message comes in through the Message Received callback. 
 
     Input
-    	fb_id		string with facebook ID
+    	fb_id		        string with facebook ID
     	prompt 				string with prompt
     	quick_replies		list of dicts, each dict has content_type, title, payload, and optional image_url. Payload should be a json
 
@@ -172,17 +172,18 @@ def send_quick_reply(fb_id, prompt, quick_replies):
         log(r.text)
 
 
-def send_quick_reply_rating(fb_id, prompt, question_identifier, point_range=(0, 10)):
-    ''' Sends a quick reply rating request
+def send_quick_reply_rating(fb_id, prompt, question_identifier, point_range=(0, 10), trial_hash='no_trial'):
+    ''' Sends a quick reply rating request for a specific trial. 
 
     Args
         prompt                  string with prompt
-        question_identifier     used in the payload to identify the question
+        question_identifier     used in the payload to identify the question - make it something intelligible. This will be used in app.py. 
         point_range             tuple with bounds for range of allowable answers. 
+        trial_hash              if this concerns a trial, set the hash. Otherwise string with 'no_trial'
 
     '''
     quick_replies = [
-        {'content_type': 'text', 'title': str(rating), 'payload':json.dumps({question_identifier: str(rating)})} 
+        {'content_type': 'text', 'title': str(rating), 'payload':json.dumps({question_identifier: {'trial_hash': trial_hash, 'rating': str(rating)}})} 
         for rating in range(point_range[0], point_range[1]+1)
     ]
     send_quick_reply(fb_id, prompt, quick_replies)

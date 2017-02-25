@@ -43,27 +43,23 @@ def webhook():
                     recipient_id = messaging_event["recipient"]["id"]  # the recipient's ID, which should be your page's facebook ID
                     message_text = messaging_event["message"]["text"]  # the message's text
 
+                    # get the user object
+                    user = db_utils.User(fb_id)
+
                     # Get the user's ID
                     txt = urllib2.urlopen("https://graph.facebook.com/v2.6/"+fb_id+"?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token="+os.environ["PAGE_ACCESS_TOKEN"]).read()
                     txt_dict = json.loads(txt)
                     # print("PRINTING THE USER INFO")
                     # print(txt_dict)
                     
-                    # Check whether sender is in the database.
-                    new_user = db_utils.fb_check_new_user(fb_id)
 
-                    if new_user:
+                    if user.exists():
                         # print("NEW USER! WOOHOO!")
                         msg.send_plain_text(fb_id, msg.rnd_text_string('greeting') + ' ' + txt_dict['first_name'] + ', nice to meet you! Welcome to Causali!')
                         msg.send_image(fb_id, msg.rnd_gif('welcome hi'))
                         msg.send_plain_text(fb_id, 'Type "start experiment" to get started, or "help" for all commands.')
-                        # msg.send_quick_reply_rating(
-                        #     fb_id = fb_id, 
-                        #     prompt = 'On a scale from 0 to 10, where 0 is miserable and 10 is as happy as you\'ve ever been, how happy do you feel right now?', 
-                        #     question_identifier = 'intro_happiness_rating'
-                        #     )
                         # store the user in the DB
-                        db_utils.fb_store_user(
+                        user.create(
                             first_name=txt_dict['first_name'], 
                             second_name=txt_dict['last_name'], 
                             fb_id=fb_id, 
@@ -76,13 +72,18 @@ def webhook():
                             # Will also send the required messages back to user.
                             question, response = db_utils.parse_quick_reply(messaging_event)
                             ### Cycle through different responses
-                            # generic logging for now. 
-
-                            r = db_utils.fb_log_entry(fb_id, question, response)
-                            if r.acknowledged:
-                                msg.send_plain_text(fb_id, 'Thanks, we\'ve stored your response.')
+                            if question == 'response_prompt':
+                                # This means the quick reply was in response to a question about their current state.
+                                trial_hash = response['trial_hash']
+                                rating = response['rating']
+                                db_utils.store_response(trial_hash, rating)
                             else:
-                                msg.send_plain_text(fb_id, 'Something went wrong, we didn\'t store your response =/')
+                                # generic log
+                                r = user.log_entry(question, response)
+                                if r.acknowledged:
+                                    msg.send_plain_text(fb_id, 'Thanks, we\'ve stored your response.')
+                                else:
+                                    msg.send_plain_text(fb_id, 'Something went wrong, we didn\'t store your response =/')
                             
 
                         else:  # not a quick reply
@@ -120,10 +121,7 @@ def webhook():
                                     msg.send_plain_text(fb_id, str(r.deleted_count) + " experiments deleted.")
                                     msg.send_plain_text(fb_id, "Science has left the building :(")
                             elif message_text.lower() == "delete user":
-                                db_utils.fb_delete_experiment(fb_id)
-                                db_utils.fb_delete_user(fb_id)  
-                                db_utils.fb_delete_logs(fb_id)  
-                                db_utils.fb_delete_trials(fb_id)  # should probably only delete incomplete ones.
+                                user.destroy_everything()
                                 msg.send_plain_text(fb_id, "Your experiments, trials, logs, and user details been removed")
                                 msg.send_image(fb_id, msg.rnd_gif('sad goodbye'))
                             elif message_text.lower() == 'gif me science':
