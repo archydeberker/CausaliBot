@@ -49,12 +49,9 @@ def webhook():
                     # Get the user's ID
                     txt = urllib2.urlopen("https://graph.facebook.com/v2.6/"+fb_id+"?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token="+os.environ["PAGE_ACCESS_TOKEN"]).read()
                     txt_dict = json.loads(txt)
-                    # print("PRINTING THE USER INFO")
-                    # print(txt_dict)
                     
 
-                    if user.exists():
-                        # print("NEW USER! WOOHOO!")
+                    if not user.exists():
                         msg.send_plain_text(fb_id, msg.rnd_text_string('greeting') + ' ' + txt_dict['first_name'] + ', nice to meet you! Welcome to Causali!')
                         msg.send_image(fb_id, msg.rnd_gif('welcome hi'))
                         msg.send_plain_text(fb_id, 'Type "start experiment" to get started, or "help" for all commands.')
