@@ -632,7 +632,7 @@ class User(object):
 
 		'''
 		return coll('user_logs').insert_one({
-			'fb_id': fb_id,
+			'fb_id': self.fb_id,
 			'created_at': datetime.datetime.now(pytz.utc),
 			key: value
 			})
