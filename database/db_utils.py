@@ -182,7 +182,7 @@ def fb_send_outstanding_response_prompts():
 
 
 		# store that instruction is sent, set the time instruction was sent, and update last_modified
-		trials_coll.update_one({"fb_id": prompt["fb_id"]}, {
+		trials_coll.update_one({"hash_sha256": prompt["hash_sha256"]}, {
 			"$set": {
 				"response_request_sent": True
 			}, 
@@ -213,7 +213,7 @@ def fb_send_outstanding_instructions():
 		msg.send_plain_text(prompt['fb_id'], "Hey %s, hope you're having a great day. As part of your meditation experiment with Causali, today you should %s"%(user['first_name'],prompt['condition'].lower()))
 
 		# store in the trials collection that the instruction has been sent and exact datetime
-		trials_coll.update_one({"fb_id": prompt["fb_id"]}, {
+		trials_coll.update_one({"hash_sha256": prompt["hash_sha256"]}, {
 			"$set": {
 				"instruction_sent": True
 			}, 
