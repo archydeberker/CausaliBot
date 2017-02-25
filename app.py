@@ -70,20 +70,24 @@ def webhook():
                         if "quick_reply" in messaging_event["message"]:
                             # give the whole object, including sender id, message text, and quick replies
                             # Will also send the required messages back to user.
-                            question, response = db_utils.parse_quick_reply(messaging_event)
+                            question_identifier, response = db_utils.parse_quick_reply(messaging_event)
                             ### Cycle through different responses
-                            if question == 'response_prompt':
+                            if question_identifier == 'response_prompt':
                                 # This means the quick reply was in response to a question about their current state.
                                 trial_hash = response['trial_hash']
                                 rating = response['rating']
-                                db_utils.store_response(trial_hash, rating)
+                                r = db_utils.store_response(trial_hash, rating)
+                                if r.modified_count == 1:
+                                    msg.send_plain_text(fb_id, 'Thanks, we\'ve stored %s.' % rating)
+                                else:
+                                    msg.send_plain_text(fb_id, 'Sorry, looks like we didn\'t store that correctly :(')
                             else:
                                 # generic log
                                 r = user.log_entry(question, response)
                                 if r.acknowledged:
-                                    msg.send_plain_text(fb_id, 'Thanks, we\'ve stored your response.')
+                                    msg.send_plain_text(fb_id, 'Thanks, we\'ve stored your response "%s".' % response)
                                 else:
-                                    msg.send_plain_text(fb_id, 'Something went wrong, we didn\'t store your response =/')
+                                    msg.send_plain_text(fb_id, 'Something went wrong, we didn\'t store your response :(')
                             
 
                         else:  # not a quick reply

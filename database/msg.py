@@ -174,6 +174,14 @@ def send_quick_reply(fb_id, prompt, quick_replies):
 
 def send_quick_reply_rating(fb_id, prompt, question_identifier, point_range=(0, 10), trial_hash='no_trial'):
     ''' Sends a quick reply rating request for a specific trial. 
+    Example function call taken from fb_send_outstanding_response_prompts:
+        msg.send_quick_reply_rating(
+            fb_id=prompt['fb_id'], 
+            prompt="How calm are you feeling right now %s?" % user['first_name'], 
+            question_identifier='trial_response',  # this will be the key that identifies this is a trial response
+            point_range=(0, 10),
+            trial_hash=prompt['hash_sha256']  # this identifies the trial and will be used in the payload as well
+            )
 
     Args
         prompt                  string with prompt

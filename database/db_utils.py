@@ -149,7 +149,7 @@ def store_response(trial_hash, response):
 		print("could not find the document with hash %s" % trial_hash)
 		return None
 	# deposit result
-	coll('trials').update_one({"hash_sha256": trial_hash}, {
+	return coll('trials').update_one({"hash_sha256": trial_hash}, {
 		'$set': {
 			'response_given': True,
 			'trialRating': response
@@ -180,7 +180,7 @@ def fb_send_outstanding_response_prompts():
 		msg.send_quick_reply_rating(
 			fb_id=prompt['fb_id'], 
 			prompt="How calm are you feeling right now %s?" % user['first_name'], 
-			question_identifier='trial_response',  # this will be the key that identifies this is a trial response
+			question_identifier='response_prompt',  # this will be the key that identifies this is a trial response
 			point_range=(0, 10),
 			trial_hash=prompt['hash_sha256']  # this identifies the trial and will be used in the payload as well
 			)
