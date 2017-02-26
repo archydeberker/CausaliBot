@@ -581,10 +581,15 @@ class User(object):
 		coll('logs').delete_many({'fb_id': self.fb_id})
 
 
-	def deactivate(self):
+	def delete_future_trials(self):
 		"""Remove any outstanding trials but preserve existing data"""
 		for trial in self.list_incomplete_trials():
 			coll('trials').delete_one({'hash_sha256': trial['hash_sha256']})
+
+
+	def destroy_all_trials(self):
+		"""remove all trials, including ones with data"""
+		return coll('trials').delete_many({'fb_id': self.fb_id})
 
 
 	def list_incomplete_trials(self):

@@ -112,14 +112,17 @@ def webhook():
     delete user
     gif me science
     log breakfast eggs
+    log stress time
                                 """
                                 )
                             elif message_text.lower() == 'delete experiment':
+                                # delete experiment and all trials
                                 r = db_utils.fb_delete_experiment(fb_id)
+                                rtrials = user.destroy_all_trials()
                                 if r.deleted_count == 0:
                                     msg.send_plain_text(fb_id, "You have no experiments. Try 'start experiment'")
                                 else:
-                                    msg.send_plain_text(fb_id, str(r.deleted_count) + " experiments deleted.")
+                                    msg.send_plain_text(fb_id, "%d experiments deleted, and %d trials deleted." % (r.deleted_count, rtrials.deleted_count))
                                     msg.send_plain_text(fb_id, "Science has left the building :(")
                             elif message_text.lower() == "delete user":
                                 user.destroy_everything()
