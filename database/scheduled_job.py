@@ -19,19 +19,6 @@ import requests
 import datetime
 from flask import Flask, request
 
-
-# Do verification
-# when the endpoint is registered as a webhook, it must echo back
-# the 'hub.challenge' value it receives in the query arguments
-
-def verify():
-	if request.args.get("hub.mode") == "subscribe" and request.args.get("hub.challenge"):
-	    if not request.args.get("hub.verify_token") == os.environ["VERIFY_TOKEN"]:
-	        return "Verification token mismatch", 403
-	    return request.args["hub.challenge"], 200
-
-	return "Hello world", 200
-
 # Now send stuff
 db_utils.fb_send_outstanding_instructions()
 db_utils.fb_send_outstanding_response_prompts()
