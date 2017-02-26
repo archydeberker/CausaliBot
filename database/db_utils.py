@@ -13,7 +13,6 @@ import hashlib
 import pandas as pd
 from itertools import groupby
 import pytz
-
 from database import msg
 
 
@@ -144,7 +143,7 @@ def store_response(trial_hash, response):
 	# check the has is in the database
 	doc = coll('trials').find_one({"hash_sha256": trial_hash})
 	if not doc: # if doc cannot be found
-		print("could not find the document with hash %s" % trial_hash)
+		log("could not find the document with hash %s" % trial_hash)
 		return None
 	# deposit result
 	return coll('trials').update_one({"hash_sha256": trial_hash}, {
@@ -166,9 +165,9 @@ def fb_send_outstanding_response_prompts():
 	"""
 	outstanding = get_uncompleted_response_prompts(include_past=True, include_future=False)
 	if not outstanding: # if list is empty
-		print("no outstanding response prompts")
+		log("no outstanding response prompts")
 		return None
-	print("number of outstanding response prompts: %d" % len(outstanding))
+	log("number of outstanding response prompts: %d" % len(outstanding))
 
 	# at this stage there are outstanding response prompts
 	for prompt in outstanding:
@@ -202,9 +201,9 @@ def fb_send_outstanding_instructions():
 	"""
 	outstanding = get_uncompleted_instructions(include_past=True, include_future=False)
 	if not outstanding: # if list is empty
-		print("no outstanding instructions")
+		log("no outstanding instructions")
 		return None
-	print("number of outstanding instructions: %d" % len(outstanding))
+	log("number of outstanding instructions: %d" % len(outstanding))
 
 	# at this stage there are outstanding response prompts
 	for prompt in outstanding:
@@ -263,33 +262,6 @@ def fb_user_check_experiment_signup_status(fb_id):
 		return 'complete'
 
 
-def fb_delete_experiment(fb_id):
-	""" Delete the experiments associated with this user
-
-	"""
-	return coll('experiments').delete_many({'fb_id': fb_id})
-
-
-def fb_delete_trials(fb_id):
-	"""Delete all trials for user
-
-	Input
-		fb_id		ID of user to clear
-	Returns
-		a delete_many result
-	"""
-	return coll('trials').delete_many({'fb_id': fb_id})
-
-
-def fb_delete_logs(fb_id):
-	"""Delete all logs for user
-
-	Input
-		fb_id		ID of user to clear
-	Returns
-		a delete_many result
-	"""
-	return coll('user_logs').delete_many({'fb_id': fb_id})
 
 
 def fb_init_experiment_meditation(fb_id, instructionTime=None, responseTime=None):
@@ -361,7 +333,7 @@ def fb_init_trials(fb_id):
 			if all(len(list(group)) <= 3 for _, group in groupby(condition_array)):
 				satisfied = True
 	if not satisfied:
-		print('did not reach criterion for randomising; using current state of condition_array instead')
+		log('did not reach criterion for randomising; using current state of condition_array instead')
 	
 	# make a pytz object to localise the dates and times. Some crucial notes on timezones:
 	# - Once a date-aware object is written to Mongo it will be transformed to UTC. 
@@ -391,7 +363,7 @@ def fb_init_trials(fb_id):
 	# insert each trial into database.
 	insert_result = []
 	for ix, condition in enumerate(condition_array):
-		# ensure unique-ness. Burdensome on database but otherwise it's all fucked.
+		# ensure unique-ness. Burdensome on database but if this goes badly (or e.g. heroku resets the seed on every boot) it is all fucked.
 		unique = False
 		while not unique:
 			hash = hashlib.sha256(str(np.random.random())).hexdigest()
@@ -512,7 +484,7 @@ def string_to_datetime_hour_minute(string):
 
 
 class User(object):
-	''' Attempt to make all user-centred operations object-oriented.
+	''' This is a User object which handles user-level operations. Not all of these are refactored into this class yet.
 
 	Guide on classes:
 	https://jeffknupp.com/blog/2014/06/18/improve-your-python-python-classes-and-object-oriented-programming/
@@ -558,7 +530,7 @@ class User(object):
 		return result
 
 
-	def n_completed_trials(self):
+	def count_completed_trials(self):
 		"""Return integer with number of completed trials"""
 		
 		# construct the query for completed trials
@@ -578,7 +550,7 @@ class User(object):
 		coll('users').delete_many({'fb_id': self.fb_id})
 		coll('trials').delete_many({'fb_id': self.fb_id})
 		coll('experiments').delete_many({'fb_id': self.fb_id})
-		coll('logs').delete_many({'fb_id': self.fb_id})
+		coll('user_logs').delete_many({'fb_id': self.fb_id})
 
 
 	def delete_future_trials(self):
@@ -587,9 +559,15 @@ class User(object):
 			coll('trials').delete_one({'hash_sha256': trial['hash_sha256']})
 
 
-	def destroy_all_trials(self):
+	def delete_trials(self):
 		"""remove all trials, including ones with data"""
 		return coll('trials').delete_many({'fb_id': self.fb_id})
+
+
+	def delete_experiments(self):
+		""" Delete the experiments associated with this user
+		"""
+		return coll('experiments').delete_many({'fb_id': self.fb_id})
 
 
 	def list_incomplete_trials(self):
@@ -607,7 +585,6 @@ class User(object):
 		key: string indicating the key to update
 		value: the new value
 		"""
-		# print('Updating experiment record with ' + key + ' set to ' + str(value))
 		return coll('users').update_one({'fb_id': self.fb_id}, {
 			'$set': {
 				key: value

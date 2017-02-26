@@ -72,7 +72,7 @@ def webhook():
                             if question_identifier == 'response_prompt':
                                 # This means the quick reply was in response to a question about their current state.
                                 trial_hash = response['trial_hash']
-                                rating = response['rating']
+                                rating = response['rating']  # leave as whatever it comes in as - we might want to add other things than ints eventually.
                                 r = db_utils.store_response(trial_hash, rating)
                                 if r.modified_count == 1:
                                     msg.send_plain_text(fb_id, 'Thanks, we\'ve stored %s.' % rating)
@@ -82,14 +82,13 @@ def webhook():
                                 # generic log
                                 r = user.log_entry(question, response)
                                 if r.acknowledged:
-                                    msg.send_plain_text(fb_id, 'Thanks, we\'ve stored your response "%s".' % response)
+                                    msg.send_plain_text(fb_id, 'Thanks, we\'ve stored your response "%s".' % str(response))
                                 else:
                                     msg.send_plain_text(fb_id, 'Something went wrong, we didn\'t store your response :(')
                             
 
                         else:  # not a quick reply
                             exp_state = db_utils.fb_user_check_experiment_signup_status(fb_id)
-                            # print(exp_state)
 
                             ####### EXPLICIT COMMANDS
                             if message_text.lower() == 'start experiment':
@@ -117,8 +116,8 @@ def webhook():
                                 )
                             elif message_text.lower() == 'delete experiment':
                                 # delete experiment and all trials
-                                r = db_utils.fb_delete_experiment(fb_id)
-                                rtrials = user.destroy_all_trials()
+                                r = user.delete_experiments()
+                                rtrials = user.delete_trials()
                                 if r.deleted_count == 0:
                                     msg.send_plain_text(fb_id, "You have no experiments. Try 'start experiment'")
                                 else:
@@ -131,7 +130,7 @@ def webhook():
                             elif message_text.lower() == 'gif me science':
                                 msg.send_image(fb_id)
                             elif 'log' in message_text.lower(): # any sentence that contains the three letters log
-                                err, log_name, log_value= parse_log_input(message_text.lower()) # parse message
+                                err, log_name, log_value = parse_log_input(message_text.lower()) # parse message
                                 if not err:
                                     user.log_entry(log_name, log_value) # store in database in generic user_logs table
                                     msg.send_plain_text(fb_id, "Successfully logged %s as %s." % (log_name, log_value))
@@ -225,7 +224,6 @@ def get_next_info(fb_id,message_text):
 
         # Try and get timepoint from current message
         timepoint = format_timepoint(message_text)
-        # print('Time parsed:', timepoint)
         if timepoint is not None:
             msg.send_plain_text(fb_id, "Gotcha, "+str(timepoint))
             db_utils.fb_update_experiment(fb_id, 'instructionTimeLocal', timepoint)
@@ -236,7 +234,6 @@ def get_next_info(fb_id,message_text):
 
     elif action=='responseTime':
         timepoint = format_timepoint(message_text)
-        # print('Time parsed:', timepoint)
         if timepoint is not None:
             # check responseTime is later than instruction
             correct = db_utils.check_response_after_instruction(fb_id, timepoint)
@@ -247,7 +244,7 @@ def get_next_info(fb_id,message_text):
                 success = db_utils.fb_init_trials(fb_id)
                 if success:
                     msg.send_plain_text(fb_id,"We've lined up your experiment for execution. All you have to do is sit back and wait for further instructions!")
-                    msg.send_image(fb_id, image_url=msg.rnd_gif(tag='relax calm soothing pleasant'))
+                    msg.send_image(fb_id, image_url=msg.rnd_gif(tag='relax calm'))
                 else:
                     msg.send_plain_text(fb_id,"Something's gone horribly wrong, and your experiment may or may not have survived. Find a human ASAP.")
             else:
