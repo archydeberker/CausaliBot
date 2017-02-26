@@ -131,7 +131,7 @@ def webhook():
                                 err, log_name, log_value= parse_log_input(message_text.lower()) # parse message
                                 if not err:
                                     user.log_entry(log_name, log_value) # store in database in generic user_logs table
-                                    msg.send_plain_text(fb_id, "Successfully logged %s as %s. Come onnnn!!!!" % (log_name, log_value))
+                                    msg.send_plain_text(fb_id, "Successfully logged %s as %s." % (log_name, log_value))
                                     msg.send_image(fb_id, msg.rnd_gif('success'))
                                 else:
                                     msg.send_plain_text(fb_id, 

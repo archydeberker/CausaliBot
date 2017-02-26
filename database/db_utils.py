@@ -129,10 +129,8 @@ def get_uncompleted_response_prompts(include_past=True, include_future=False, so
 	else:
 		sort_as = pymongo.DESCENDING
 
-	# get connection to database
-	client, db, collection = open_connection(collectionName='trials')
 	# execute query and return as list of dicts
-	return list(collection.find(response_query).sort('response_date', sort_as).limit(limit))
+	return list(coll('trials').find(response_query).sort('response_date', sort_as).limit(limit))
 
 
 def store_response(trial_hash, response):
@@ -249,8 +247,7 @@ def fb_user_check_experiment_signup_status(fb_id):
 	""" Returns 'no experiment', 'instructionTime', 'responseTime', 'complete', 'multiple'
 
 	"""
-	_, _, collection = open_connection(collectionName='experiments')
-	user_exp = collection.find({"fb_id": fb_id})
+	user_exp = coll('experiments').find({"fb_id": fb_id})
 	if user_exp.count() == 0:
 		return 'no experiment'
 	elif user_exp.count() > 1:
@@ -270,8 +267,7 @@ def fb_delete_experiment(fb_id):
 	""" Delete the experiments associated with this user
 
 	"""
-	_, _, coll = open_connection(collectionName='experiments')
-	return coll.delete_many({'fb_id': fb_id})
+	return coll('experiments').delete_many({'fb_id': fb_id})
 
 
 def fb_delete_trials(fb_id):
@@ -282,9 +278,7 @@ def fb_delete_trials(fb_id):
 	Returns
 		a delete_many result
 	"""
-	_, _, coll = open_connection(collectionName='trials')
-	result = coll.delete_many({'fb_id': fb_id})
-	return result
+	return coll('trials').delete_many({'fb_id': fb_id})
 
 
 def fb_delete_logs(fb_id):
@@ -295,9 +289,7 @@ def fb_delete_logs(fb_id):
 	Returns
 		a delete_many result
 	"""
-	_, _, coll = open_connection(collectionName='user_logs')
-	result = coll.delete_many({'fb_id': fb_id})
-	return result
+	return coll('user_logs').delete_many({'fb_id': fb_id})
 
 
 def fb_init_experiment_meditation(fb_id, instructionTime=None, responseTime=None):
@@ -306,10 +298,8 @@ def fb_init_experiment_meditation(fb_id, instructionTime=None, responseTime=None
 	Returns an instance of pymongo InsertOneResult, e.g. insert_result.inserted_id 
 	to get the ID of inserted document
 	"""
-	# open a new connection
-	client, db, collection = open_connection(collectionName='experiments')
 	# fill with single experiment. Does not check for unique name 
-	insert_result = collection.insert_one({
+	insert_result = coll('experiments').insert_one({
 		'name': 'meditation',
 		'conditions': ["meditate", "not meditate"],
 		'dependent_vars': ["happiness"],
@@ -405,7 +395,7 @@ def fb_init_trials(fb_id):
 		unique = False
 		while not unique:
 			hash = hashlib.sha256(str(np.random.random())).hexdigest()
-			if db_handle['trials'].find({'hash_sha256': hash}).count() == 0:
+			if coll('trials').find({'hash_sha256': hash}).count() == 0:
 				unique = True
 
 		insert_result.append(coll('trials').insert_one({
@@ -435,9 +425,7 @@ def fb_update_experiment(fb_id, key, value):
 	key: string indicating the key to update
 	value: the new value
 	"""
-	# print('Updating experiment record with ' + key + ' set to ' + str(value))
-	_, _, collection = open_connection(collectionName='experiments')
-	return collection.update_one({'fb_id': fb_id}, {
+	return coll('experiments').update_one({'fb_id': fb_id}, {
 		'$set': {
 			key: value
 		},
@@ -514,8 +502,7 @@ def check_response_after_instruction(fb_id, responseTime):
 	''' Check if the string in responseTime is after this user's instructionTime
 
 	'''
-	_, _, collection = open_connection(collectionName='experiments')
-	exp = collection.find_one({'fb_id': fb_id})
+	exp = coll('experiments').find_one({'fb_id': fb_id})
 	return string_to_datetime_hour_minute(exp['instructionTimeLocal']) < string_to_datetime_hour_minute(responseTime)
 
 
@@ -596,11 +583,11 @@ class User(object):
 
 	def deactivate(self):
 		"""Remove any outstanding trials but preserve existing data"""
-		for trial in incomplete_trials():
+		for trial in self.list_incomplete_trials():
 			coll('trials').delete_one({'hash_sha256': trial['hash_sha256']})
 
 
-	def incomplete_trials(self):
+	def list_incomplete_trials(self):
 		"""Get list of all incomplete trials"""
 		return list(coll('trials').find({
 			'fb_id': self.fb_id,
