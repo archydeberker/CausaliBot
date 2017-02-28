@@ -9,7 +9,7 @@ import json
 import sys
 import os
 import requests
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 
 
 def log(message):  # simple wrapper for logging to stdout on heroku
@@ -226,14 +226,14 @@ def send_quick_reply_rating(fb_id, prompt, question_identifier, point_range=(0, 
     send_quick_reply(fb_id, prompt, quick_replies)
 
 
-def send_experiment_results(fb_id):
+#def send_experiment_results(fb_id):
     """Send an image with current results"""
-    directory = 'tmp'
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    filepath = os.path.join(directory, str(fb_id) + '.png')
+ #   directory = 'tmp'
+  #  if not os.path.exists(directory):
+   #     os.makedirs(directory)
+    #filepath = os.path.join(directory, str(fb_id) + '.png')
 
-    plt.plot([0, 1, 2, 3, 4], [0, 3, 5, 9, 11])
-    plt.savefig(filepath, bbox_inches='tight')
-    send_local_image(fb_id, filepath)
+    #plt.plot([0, 1, 2, 3, 4], [0, 3, 5, 9, 11])
+    #plt.savefig(filepath, bbox_inches='tight')
+    #send_local_image(fb_id, filepath)
 

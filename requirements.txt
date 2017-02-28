@@ -13,4 +13,3 @@ pytz
 numpy
 pandas
 matplotlib
-tkinter
