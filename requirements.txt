@@ -12,4 +12,5 @@ datetime
 pytz
 numpy
 pandas
-matplotlib
+tk-devel
+tkinter
