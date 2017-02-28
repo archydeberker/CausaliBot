@@ -9,6 +9,7 @@ import json
 import sys
 import os
 import requests
+from matplotlib import pyplot as plt
 
 
 def log(message):  # simple wrapper for logging to stdout on heroku
@@ -122,6 +123,34 @@ def send_image(fb_id, image_url=None):
         log(r.text)
 
 
+def send_local_image(fb_id, local_path):
+    """Send image stored locally to user"""
+    log("sending local image to {recipient}: {text}".format(recipient=fb_id, text=local_path))
+
+    params = {
+        "access_token": os.environ["PAGE_ACCESS_TOKEN"]
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+    data = json.dumps({
+        "recipient": {
+            "id": fb_id
+        },
+        "message": {
+            "attachment": {
+                "type": "file",
+                "payload": {}
+            }
+        },
+        "filedata": open(local_path, 'rb')
+    })
+    r = requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=data)
+    if r.status_code != 200:
+        log(r.status_code)
+        log(r.text)
+
+
 def send_quick_reply(fb_id, prompt, quick_replies):
     ''' Give someone a few options to pick from
     https://developers.facebook.com/docs/messenger-platform/send-api-reference/quick-replies
@@ -195,3 +224,16 @@ def send_quick_reply_rating(fb_id, prompt, question_identifier, point_range=(0, 
         for rating in range(point_range[0], point_range[1]+1)
     ]
     send_quick_reply(fb_id, prompt, quick_replies)
+
+
+def send_experiment_results(fb_id):
+    """Send an image with current results"""
+    directory = 'tmp'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    filepath = os.path.join(directory, str(fb_id) + '.png')
+
+    plt.plot([0, 1, 2, 3, 4], [0, 3, 5, 9, 11])
+    plt.savefig(filepath, bbox_inches='tight')
+    send_local_image(fb_id, filepath)
+

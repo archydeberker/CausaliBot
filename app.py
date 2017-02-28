@@ -129,6 +129,8 @@ def webhook():
                                 msg.send_image(fb_id, msg.rnd_gif('sad goodbye'))
                             elif message_text.lower() == 'gif me science':
                                 msg.send_image(fb_id)
+                            elif message_text.lower() == 'show me results':
+                                msg.send_experiment_results(fb_id)
                             elif 'log' in message_text.lower(): # any sentence that contains the three letters log
                                 err, log_name, log_value = parse_log_input(message_text.lower()) # parse message
                                 if not err:

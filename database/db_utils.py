@@ -17,7 +17,7 @@ from database import msg
 
 
 # find the database URI. If not available in the environment, use local mongodb host
-URI = os.getenv('MONGO_URI', 'mongodb://localhost')
+URI = os.getenv('MONGODB_URI', 'mongodb://localhost')
 # get the name of the database: either causali or causali-staging (or localhost).
 db = URI.split('/')[-1]
 
@@ -605,3 +605,4 @@ class User(object):
 			'created_at': datetime.datetime.now(pytz.utc),
 			key: value
 			})
+
