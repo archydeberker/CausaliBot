@@ -252,14 +252,14 @@ def fb_user_check_experiment_signup_status(fb_id):
 	elif user_exp.count() > 1:
 		return "multiple"
 
-	# another trip to mongo, should
+	# another trip to mongo
 	exp = user_exp.next()
-	if exp['instructionTimeLocal'] is None:
+	if exp['instructionTimeLocal'] is None:  # experiment does not have an instruction time set
 		return 'instructionTime'
-	elif exp['responseTimeLocal'] is None:
+	elif exp['responseTimeLocal'] is None:  # experiment does not have a response time set
 		return 'responseTime'
 	else:
-		return 'complete'
+		return 'complete'  # if those two times are set, the experiment setup is complete
 
 
 

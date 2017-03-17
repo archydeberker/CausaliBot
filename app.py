@@ -50,6 +50,7 @@ def webhook():
                     txt = urllib2.urlopen("https://graph.facebook.com/v2.6/"+fb_id+"?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token="+os.environ["PAGE_ACCESS_TOKEN"]).read()
                     txt_dict = json.loads(txt)
                     
+                    log("User %s sent message: %s" % (txt_dict['first_name'], message_text))
 
                     if not user.exists():
                         msg.send_plain_text(fb_id, msg.rnd_text_string('greeting') + ' ' + txt_dict['first_name'] + ', nice to meet you! Welcome to Causali!')
@@ -89,6 +90,7 @@ def webhook():
 
                         else:  # not a quick reply
                             exp_state = db_utils.fb_user_check_experiment_signup_status(fb_id)
+                            log("User %s is in experiment state: %s" % (txt_dict['first_name'], exp_state))
 
                             ####### EXPLICIT COMMANDS
                             if message_text.lower() == 'start experiment':
@@ -147,7 +149,7 @@ def webhook():
                                 get_next_info(fb_id, message_text)
                             elif exp_state == 'no experiment':  # if user doesn't have experiment but didn't say one of the commands, then God knows what they want
                                 msg.send_plain_text(fb_id, "Not sure what you're getting at there. Try \"start experiment\" or \"help\"")
-                            elif exp_state == 'complete':  # if they already have complete experiment
+                            elif exp_state == 'complete':  # if they already have an experiment set up
                                 msg.send_plain_text(fb_id, "You're already set for the experiment. Try \"help\" if you're really stuck.")
                                 
 
