@@ -1,4 +1,3 @@
-	# import packages
 import sys
 import os
 import json
@@ -7,10 +6,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.join(os.pat
 sys.path.append('/app/frontend_play/dist/google-visualization-python-master')
 import pymongo
 import datetime
-from bson.objectid import ObjectId # to be able to query _id in mongo
 import numpy as np
 import hashlib
-import pandas as pd
 from itertools import groupby
 import pytz
 from database import msg
@@ -22,7 +19,7 @@ URI = os.getenv('MONGODB_URI', 'mongodb://localhost')
 db = URI.split('/')[-1]
 
 def log(message):  # simple wrapper for logging to stdout on heroku
-    print str(message)
+    print(str(message))
     sys.stdout.flush()
 
 

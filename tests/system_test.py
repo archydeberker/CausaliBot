@@ -12,6 +12,6 @@ base_path = os.path.abspath(os.path.dirname(__file__))
 
 def test_ping():
     res = test_client.get('/ping')
-    assert res.data == 'pong'
+    assert res.data == b'pong'
     assert res.status_code == 200
 
