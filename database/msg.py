@@ -48,7 +48,7 @@ def rnd_gif(tag=''):
 
     r = requests.get('http://api.giphy.com/v1/gifs/random?', params=query_fields)
 
-    if r.status_code() == 200:  # means success
+    if r.status_code == 200:  # means success
         msg_content = r.json()
         giphy_url = msg_content['data']['image_url']
         print('URL retrieved from Giphy:', giphy_url)
@@ -58,7 +58,7 @@ def rnd_gif(tag=''):
 
     else:
         print('Request to Giphy failed with code')
-        print('Status code:', r.status_code())  # print the code
+        print('Status code:', r.status_code)  # print the code
 
         return ''
 
