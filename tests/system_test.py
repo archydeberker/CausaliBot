@@ -1,7 +1,7 @@
-
 import os
-import requests
+from app import app
 
+test_client = app.test_client()
 
 API_HOST = os.environ.get('API_HOST', 'localhost')
 API_PORT = os.environ.get('API_PORT', '5000')
@@ -11,7 +11,7 @@ base_path = os.path.abspath(os.path.dirname(__file__))
 
 
 def test_ping():
-    res = requests.get(base_url + "ping")
-    assert res.content == 'pong'
+    res = test_client.get('/ping')
+    assert res.data == 'pong'
     assert res.status_code == 200
 
