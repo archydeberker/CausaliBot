@@ -54,7 +54,6 @@ def webhook():
 
                     if not user.exists():
                         msg.send_plain_text(fb_id, msg.rnd_text_string('greeting') + ' ' + txt_dict['first_name'] + ', nice to meet you! Welcome to Causali!')
-                        # msg.send_image(fb_id, msg.rnd_gif('welcome hi'))
                         msg.send_plain_text(fb_id, 'Type "start experiment" to get started, or "help" for all commands.')
                         # store the user in the DB
                         user.create(
@@ -128,7 +127,6 @@ def webhook():
                             elif message_text.lower() == "delete user":
                                 user.destroy_everything()
                                 msg.send_plain_text(fb_id, "Your experiments, trials, logs, and user details been removed")
-                                # msg.send_image(fb_id, msg.rnd_gif('sad goodbye'))
                             elif message_text.lower() == 'gif me science':
                                 msg.send_image(fb_id)
                             elif message_text.lower() == 'show me results':
@@ -138,7 +136,6 @@ def webhook():
                                 if not err:
                                     user.log_entry(log_name, log_value) # store in database in generic user_logs table
                                     msg.send_plain_text(fb_id, "Successfully logged %s as %s." % (log_name, log_value))
-                                    # msg.send_image(fb_id, msg.rnd_gif('success'))
                                 else:
                                     msg.send_plain_text(fb_id, 
                                         "Hmmm. Please log like this: \"log <something> <value of something>\", such as \"log breakfast eggs and toast\". \
@@ -220,7 +217,6 @@ def get_next_info(fb_id,message_text):
 
     # Check database status, This will initiate the experiment if not already done so, and return a flag as to the next necessary argument
     action=db_utils.fb_user_check_experiment_signup_status(fb_id)
-    # log(action)
 
     if action=='instructionTime': # need to get first timepoint
     # TO DO: currently, after it has sucessfully returned a 'gotcha' message for meditation time, it still returns flag 'instructionTime' on next msg...
