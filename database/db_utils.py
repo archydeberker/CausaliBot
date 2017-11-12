@@ -262,8 +262,6 @@ def fb_user_check_experiment_signup_status(fb_id):
 		return 'complete'  # if those two times are set, the experiment setup is complete
 
 
-
-
 def fb_init_experiment_meditation(fb_id, instructionTime=None, responseTime=None):
 	""" Code to initialise the meditation experiment in the database. Helpful to identify what variables to store and how to name them
 	
