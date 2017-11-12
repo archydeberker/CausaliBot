@@ -15,6 +15,11 @@ app = Flask(__name__)
 
 # TODO: if the code crashes anywhere, facebook will keep re-sending the message. How do we prevent FB from doing this? I'd hate a big try-except statement because it'd make debugging a bitch.
 
+@app.route('/ping', methods=['GET'])
+def ping():
+    return 'pong'
+
+
 @app.route('/', methods=['GET'])
 def verify():
     # when the endpoint is registered as a webhook, it must echo back
