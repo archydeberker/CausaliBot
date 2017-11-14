@@ -183,14 +183,6 @@ def send_quick_reply(fb_id, prompt, quick_replies):
     '''
     log("sending quick reply to {recipient}: {text}".format(recipient=fb_id, text=prompt))
 
-    log("quick replies structure")
-    log(quick_replies)
-
-    assert all([len(json.loads(dic['payload'])) == 1 for dic in
-                quick_replies]), "All payload items should be a dict with a single key indicating the question"
-    assert len(set([json.loads(dic['payload']).keys()[0] for dic in
-                    quick_replies])) == 1, "All payload items should have the same key in the dict indicating the question type"
-
     params = {
         "access_token": os.environ["PAGE_ACCESS_TOKEN"]
     }
