@@ -458,7 +458,7 @@ def parse_quick_reply(messaging_event):
     payload = json.loads(messaging_event['message']['quick_reply']['payload'])
 
     assert len(payload) == 1, "Was expecting payload to only have a single key indicating the question"
-    question = payload.keys()[0]
+    question = list(payload.keys()[0])
     response = payload[question]
     return question, response
 
