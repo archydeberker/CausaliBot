@@ -87,7 +87,7 @@ def webhook():
                                     msg.send_plain_text(fb_id, 'Sorry, looks like we didn\'t store that correctly :(')
                             else:
                                 # generic log
-                                r = user.log_entry(question, response)
+                                r = user.log_entry(question_identifier, response)
                                 if r.acknowledged:
                                     msg.send_plain_text(fb_id, 'Thanks, we\'ve stored your response "%s".' % str(response))
                                 else:
