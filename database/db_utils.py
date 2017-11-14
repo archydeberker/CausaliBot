@@ -223,7 +223,7 @@ def fb_send_outstanding_instructions():
 		})
 
 
-def fb_instruct_meditation(name, fb_id, condition):
+def fb_instruct_meditation(fb_id, condition):
 	"""Instructs a user to do condition.
 
 	Inputs
@@ -235,8 +235,6 @@ def fb_instruct_meditation(name, fb_id, condition):
 	"""
 
 	msg.send_plain_text(fb_id, "Hope you're having a great day. As part of your meditation experiment with Causali, today you should %s"%condition.lower())
-
-	return result
 
 
 def fb_user_check_experiment_signup_status(fb_id):
