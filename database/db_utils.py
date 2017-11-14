@@ -359,7 +359,7 @@ def fb_init_trials(fb_id):
 		# ensure unique-ness. Burdensome on database but if this goes badly (or e.g. heroku resets the seed on every boot) it is all fucked.
 		unique = False
 		while not unique:
-			hash = hashlib.sha256(str(np.random.random())).hexdigest()
+			hash = hashlib.sha256(str(np.random.random()).encode('utf-8')).hexdigest()
 			if coll('trials').find({'hash_sha256': hash}).count() == 0:
 				unique = True
 
