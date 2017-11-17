@@ -3,32 +3,31 @@ Also contains one function to give you a random element
 """
 
 import random
-import urllib2
-import urllib
 import json
 import sys
 import os
 import requests
-#from matplotlib import pyplot as plt
 
 
 def log(message):  # simple wrapper for logging to stdout on heroku
-    print str(message)
+    print(str(message))
     sys.stdout.flush()
-    
+
 
 def rnd_text_string(var):
-	""" var is the name you want a random element from.
+    """ var is the name you want a random element from.
 	Example: msg.rnd('greeting')
 	"""
-	messages = {
-	'greeting' : ['Hi', 'Hey', 'Hola'],
-	}
-	return random.choice(messages[var])
+
+    messages = {
+        'greeting': ['Hi', 'Hey', 'Hola'],
+    }
+
+    return random.choice(messages[var])
 
 
 def rnd_gif(tag=''):
-	""" get random Giphy gif, or random based on tag given. 
+    """ get random Giphy gif, or random based on tag given.
 	https://github.com/Giphy/GiphyAPI#random-endpoint
 
 	Returns the URL of the gif
@@ -36,26 +35,32 @@ def rnd_gif(tag=''):
 	TODO make the gif actually random, check that the arguments here are not also global/packages making the code return the same gif over and over. 
 
 	"""
-	
-	# uses a public beta API key
-	query_fields = {
-		'api_key': 'dc6zaTOxFJmzC', 
-		'tag': tag,
-		'rating': 'g'  # no offensive gifs
-		}
-	request_object = urllib2.Request('http://api.giphy.com/v1/gifs/random?' + urllib.urlencode(query_fields))
-	response_object = urllib2.urlopen(request_object)
 
-	if response_object.getcode() == 200:  # means success
-		msg_content = json.loads(response_object.read())
-		giphy_url = msg_content['data']['image_url']
-		print('URL retrieved from Giphy:', giphy_url)
-		# use image_url instead of URL so Facebook recognises it's a gif.
-		return giphy_url
-	else:
-		print('Request to Giphy failed with code')
-		print('Status code:', response_object.getcode())  # print the code
-		return ''
+    # uses a public beta API key
+
+    query_fields = {'api_key': 'dc6zaTOxFJmzC',
+                    'tag': tag,
+                    'rating': 'g',  # no offensive gifs
+                    }
+
+    # request_object = urllib2.Request('http://api.giphy.com/v1/gifs/random?' + urllib.urlencode(query_fields))
+    # response_object = urllib2.urlopen(request_object)
+
+    r = requests.get('http://api.giphy.com/v1/gifs/random?', params=query_fields)
+
+    if r.status_code == 200:  # means success
+        msg_content = r.json()
+        giphy_url = msg_content['data']['image_url']
+        print('URL retrieved from Giphy:', giphy_url)
+
+        # use image_url instead of URL so Facebook recognises it's a gif.
+        return giphy_url
+
+    else:
+        print('Request to Giphy failed with code')
+        print('Status code:', r.status_code)  # print the code
+
+        return ''
 
 
 def send_plain_text(fb_id, message_text):
@@ -177,9 +182,7 @@ def send_quick_reply(fb_id, prompt, quick_replies):
     ]
     '''
     log("sending quick reply to {recipient}: {text}".format(recipient=fb_id, text=prompt))
-    assert all([len(json.loads(dic['payload'])) == 1 for dic in quick_replies]), "All payload items should be a dict with a single key indicating the question"
-    assert len(set([json.loads(dic['payload']).keys()[0] for dic in quick_replies])) == 1, "All payload items should have the same key in the dict indicating the question type"
-    
+
     params = {
         "access_token": os.environ["PAGE_ACCESS_TOKEN"]
     }
@@ -220,20 +223,22 @@ def send_quick_reply_rating(fb_id, prompt, question_identifier, point_range=(0, 
 
     '''
     quick_replies = [
-        {'content_type': 'text', 'title': str(rating), 'payload':json.dumps({question_identifier: {'trial_hash': trial_hash, 'rating': str(rating)}})} 
-        for rating in range(point_range[0], point_range[1]+1)
+        {'content_type': 'text', 'title': str(rating),
+         'payload': json.dumps({question_identifier: {'trial_hash': trial_hash, 'rating': str(rating)}})}
+        for rating in range(point_range[0], point_range[1] + 1)
     ]
     send_quick_reply(fb_id, prompt, quick_replies)
 
-
-#def send_experiment_results(fb_id):
+def send_experiment_results(fb_id):
     """Send an image with current results"""
- #   directory = 'tmp'
-  #  if not os.path.exists(directory):
-   #     os.makedirs(directory)
-    #filepath = os.path.join(directory, str(fb_id) + '.png')
 
-    #plt.plot([0, 1, 2, 3, 4], [0, 3, 5, 9, 11])
-    #plt.savefig(filepath, bbox_inches='tight')
-    #send_local_image(fb_id, filepath)
+    send_plain_text(fb_id, 'Terribly sorry, we have not implemented that yet')
 
+    #   directory = 'tmp'
+    #  if not os.path.exists(directory):
+    #     os.makedirs(directory)
+    # filepath = os.path.join(directory, str(fb_id) + '.png')
+
+    # plt.plot([0, 1, 2, 3, 4], [0, 3, 5, 9, 11])
+    # plt.savefig(filepath, bbox_inches='tight')
+    # send_local_image(fb_id, filepath)

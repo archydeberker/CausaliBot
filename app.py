@@ -1,19 +1,25 @@
+#! usr/bin/python3
+
 import os
 import sys
 import json
-import urllib2
 import re
 from database import db_utils
 from database import wit
 from database import msg
-import requests
 import datetime
+import requests
 from flask import Flask, request
 
 app = Flask(__name__)
 
 
 # TODO: if the code crashes anywhere, facebook will keep re-sending the message. How do we prevent FB from doing this? I'd hate a big try-except statement because it'd make debugging a bitch.
+
+@app.route('/ping', methods=['GET'])
+def ping():
+    return 'pong'
+
 
 @app.route('/', methods=['GET'])
 def verify():
@@ -47,8 +53,8 @@ def webhook():
                     user = db_utils.User(fb_id)
 
                     # Get the user's ID
-                    txt = urllib2.urlopen("https://graph.facebook.com/v2.6/"+fb_id+"?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token="+os.environ["PAGE_ACCESS_TOKEN"]).read()
-                    txt_dict = json.loads(txt)
+                    txt = requests.get("https://graph.facebook.com/v2.6/"+fb_id+"?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token="+os.environ["PAGE_ACCESS_TOKEN"])
+                    txt_dict = txt.json()
                     
                     log("User %s sent message: %s" % (txt_dict['first_name'], message_text))
 
@@ -80,7 +86,7 @@ def webhook():
                                     msg.send_plain_text(fb_id, 'Sorry, looks like we didn\'t store that correctly :(')
                             else:
                                 # generic log
-                                r = user.log_entry(question, response)
+                                r = user.log_entry(question_identifier, response)
                                 if r.acknowledged:
                                     msg.send_plain_text(fb_id, 'Thanks, we\'ve stored your response "%s".' % str(response))
                                 else:
@@ -168,7 +174,7 @@ def webhook():
 
 
 def log(message):  # simple wrapper for logging to stdout on heroku
-    print str(message)
+    print(str(message))
     sys.stdout.flush()
 
 
