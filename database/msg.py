@@ -229,8 +229,11 @@ def send_quick_reply_rating(fb_id, prompt, question_identifier, point_range=(0, 
     ]
     send_quick_reply(fb_id, prompt, quick_replies)
 
-    # def send_experiment_results(fb_id):
+def send_experiment_results(fb_id):
     """Send an image with current results"""
+
+    send_plain_text(fb_id, 'Terribly sorry, we have not implemented that yet')
+
     #   directory = 'tmp'
     #  if not os.path.exists(directory):
     #     os.makedirs(directory)

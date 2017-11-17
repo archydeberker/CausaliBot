@@ -24,6 +24,9 @@ def test_quick_reply_facebook():
 def test_prompt_facebook():
     msg.send_plain_text(testing_fb_id, 'Archy, this is a plain test integration test')
 
+def test_create_experimet():
+    #  TODO: We should try initializing an experiment with prompts very soon and check they arrive
+    pass
 
 def test_gif_facebook():
     gif_url = msg.rnd_gif()

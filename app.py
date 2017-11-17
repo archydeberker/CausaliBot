@@ -53,7 +53,6 @@ def webhook():
                     user = db_utils.User(fb_id)
 
                     # Get the user's ID
-                    #txt = urllib2.urlopen("https://graph.facebook.com/v2.6/"+fb_id+"?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token="+os.environ["PAGE_ACCESS_TOKEN"]).read()
                     txt = requests.get("https://graph.facebook.com/v2.6/"+fb_id+"?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token="+os.environ["PAGE_ACCESS_TOKEN"])
                     txt_dict = txt.json()
                     
