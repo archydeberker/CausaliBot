@@ -153,7 +153,7 @@ def webhook():
                                 msg.send_plain_text(fb_id, "Not sure what you're getting at there. Try \"start experiment\" or \"help\"")
                             # If quick reply does not work and user responds with a number only, try it as a trial response
                             elif message_text.isdigit(): 
-                                db_utils.store_response_attempt(fb_id, int(message_test))
+                                db_utils.store_response_attempt(fb_id, int(message_text))
                             elif exp_state == 'complete':  # if they already have an experiment set up
                                 msg.send_plain_text(fb_id, "You're already set for the experiment. Try \"help\" if you're really stuck.")
                                 
