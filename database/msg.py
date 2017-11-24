@@ -71,7 +71,7 @@ def send_plain_text(fb_id, message_text):
     '''
     log("sending message to {recipient}: {text}".format(recipient=fb_id, text=message_text))
     params = {
-        "access_token": os.environ["PAGE_ACCESS_TOKEN"]
+        "access_token": os.getenv("PAGE_ACCESS_TOKEN")
     }
     headers = {
         "Content-Type": "application/json"
@@ -104,7 +104,7 @@ def send_image(fb_id, image_url=None):
     log("sending IMAGE to {recipient}: {text}".format(recipient=fb_id, text=image_url))
 
     params = {
-        "access_token": os.environ["PAGE_ACCESS_TOKEN"]
+        "access_token": os.getenv("PAGE_ACCESS_TOKEN")
     }
     headers = {
         "Content-Type": "application/json"
@@ -133,7 +133,7 @@ def send_local_image(fb_id, local_path):
     log("sending local image to {recipient}: {text}".format(recipient=fb_id, text=local_path))
 
     params = {
-        "access_token": os.environ["PAGE_ACCESS_TOKEN"]
+        "access_token": os.getenv("PAGE_ACCESS_TOKEN")
     }
     headers = {
         "Content-Type": "application/json"
@@ -184,7 +184,7 @@ def send_quick_reply(fb_id, prompt, quick_replies):
     log("sending quick reply to {recipient}: {text}".format(recipient=fb_id, text=prompt))
 
     params = {
-        "access_token": os.environ["PAGE_ACCESS_TOKEN"]
+        "access_token": os.getenv("PAGE_ACCESS_TOKEN")
     }
     headers = {
         "Content-Type": "application/json"

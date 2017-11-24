@@ -154,6 +154,38 @@ def store_response(trial_hash, response):
     })
 
 
+def store_response_attempt(fb_id, hypothesized_rating):
+    """ Attempt to store a rating if there is an oustanding response prompt
+    
+    Quick replies are not very reliable. If people just type a number in response
+    to the response_prompt, we should store that.
+
+    input
+        fb_id                       user fb ID
+        hypothesized_rating         int
+    """
+    if not isinstance(hypothesized_rating, int):
+        log("Hypothesised rating was not an int, aborting")
+        msg.send_plain_text(fb_id, 'Sorry I didn\'t know what to do with that. Try \'help\' if you\'re stuck')
+        return None
+
+    # get most recent outstanding response prompt.
+    most_recent_uncompleted_prompt = list(coll('trials').find({
+        'fb_id': fb_id, 
+        'response_request_sent': True, 
+        'response_given': False
+        }).sort('response_date', pymongo.DESCENDING).limit(1))
+
+    if not most_recent_uncompleted_prompt:  # no uncompleted response prompt
+        log("Incorrectly understood response by user as a trial rating")
+        msg.send_plain_text(fb_id, 'Sorry I didn\'t know what to do with that. Try \'help\' if you\'re stuck')
+        return None
+
+    # otherwise store response
+    log("Storing response for user %s for trial %s as rating %d" % (fb_id, most_recent_uncompleted_prompt['hash_sha256'], hypothesized_rating))
+    store_response(most_recent_uncompleted_prompt['hash_sha256'], hypothesized_rating)
+
+
 def fb_send_outstanding_response_prompts():
     """Uses get_uncompleted_response_prompts() to get to-do list, then sends messages.
 
@@ -440,7 +472,7 @@ def parse_quick_reply(messaging_event):
       {
         "content_type":"text",
         "title":"Green",
-        "payload":"{'colour_picker': 'red'}"
+        "payload":"{'colour_picker': 'green'}"
       }
     ]
     Or for a trial, make the KEY trial_response - so we know it's a response to a trial -
