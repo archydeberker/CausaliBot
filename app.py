@@ -26,7 +26,7 @@ def verify():
     # when the endpoint is registered as a webhook, it must echo back
     # the 'hub.challenge' value it receives in the query arguments
     if request.args.get("hub.mode") == "subscribe" and request.args.get("hub.challenge"):
-        if not request.args.get("hub.verify_token") == os.environ["VERIFY_TOKEN"]:
+        if not request.args.get("hub.verify_token") == os.getenv("VERIFY_TOKEN"):
             return "Verification token mismatch", 403
         return request.args["hub.challenge"], 200
 
@@ -53,7 +53,7 @@ def webhook():
                     user = db_utils.User(fb_id)
 
                     # Get the user's ID
-                    txt = requests.get("https://graph.facebook.com/v2.6/"+fb_id+"?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token="+os.environ["PAGE_ACCESS_TOKEN"])
+                    txt = requests.get("https://graph.facebook.com/v2.6/"+fb_id+"?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token="+os.getenv("PAGE_ACCESS_TOKEN"))
                     txt_dict = txt.json()
                     
                     log("User %s sent message: %s" % (txt_dict['first_name'], message_text))
@@ -146,12 +146,14 @@ def webhook():
                                     msg.send_plain_text(fb_id, 
                                         "Hmmm. Please log like this: \"log <something> <value of something>\", such as \"log breakfast eggs and toast\". \
                                         To store a timestamp for an event, use the special word \"time\", for example \"log morning_shower time\"")
-                            
                             ##### The next ones test against state of the experiment, so all explicit commands need to go above this line #####
                             elif exp_state in ['instructionTime','responseTime']:
                                 get_next_info(fb_id, message_text)
                             elif exp_state == 'no experiment':  # if user doesn't have experiment but didn't say one of the commands, then God knows what they want
                                 msg.send_plain_text(fb_id, "Not sure what you're getting at there. Try \"start experiment\" or \"help\"")
+                            # If quick reply does not work and user responds with a number only, try it as a trial response
+                            elif message_text.isdigit(): 
+                                db_utils.store_response_attempt(fb_id, int(message_text))
                             elif exp_state == 'complete':  # if they already have an experiment set up
                                 msg.send_plain_text(fb_id, "You're already set for the experiment. Try \"help\" if you're really stuck.")
                                 
