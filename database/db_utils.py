@@ -525,7 +525,7 @@ class User(object):
     def exists(self):
         """ Returns True if exists in db, False if does not exist
         """
-        return coll('users').find({'fb_id': self.fb_id}).count() == 1
+        return coll('users').find({'fb_id': self.fb_id}).count() > 0
 
 
     def create(self, first_name, second_name, fb_id, timezone_offset=0):
