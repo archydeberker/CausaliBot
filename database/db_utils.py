@@ -18,6 +18,8 @@ URI = os.getenv('MONGODB_URI', 'mongodb://localhost')
 # get the name of the database: either causali or causali-staging (or localhost).
 db = URI.split('/')[-1]
 
+STAGING = os.getenv('STAGING', False)
+
 def log(message):  # simple wrapper for logging to stdout on heroku
     print(str(message))
     sys.stdout.flush()
@@ -370,7 +372,13 @@ def fb_init_trials(fb_id):
     nowLocal = tzUTC.localize(datetime.datetime.utcnow()).astimezone(tzUser)
     # get today's date so we know when 'tomorrow' is for this user.
     dateLocal = nowLocal.date()
+
     tomorrowLocal = dateLocal + datetime.timedelta(days=1)
+
+    if Staging:
+        # Set the first instructions and prompts to be sent the same day
+        tomorrowLocal = dateLocal
+        
     # get the first condition email and response request in the user's local time, and localise it so that when it's
     # STORED IN MONGO IT'S SET TO UTC AUTOMATICALLY. After that we can then just add 24 hours to each of these
     first_instruction_datetime = tzUser.localize(
