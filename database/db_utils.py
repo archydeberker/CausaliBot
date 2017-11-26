@@ -375,9 +375,11 @@ def fb_init_trials(fb_id):
 
     tomorrowLocal = dateLocal + datetime.timedelta(days=1)
 
-    if Staging:
+    if STAGING:
         # Set the first instructions and prompts to be sent the same day
         tomorrowLocal = dateLocal
+
+        log('Using Staging, experiment scheduled for today')
         
     # get the first condition email and response request in the user's local time, and localise it so that when it's
     # STORED IN MONGO IT'S SET TO UTC AUTOMATICALLY. After that we can then just add 24 hours to each of these
@@ -392,7 +394,8 @@ def fb_init_trials(fb_id):
             tomorrowLocal, # tomorrow's date in user's tz
             datetime.datetime.strptime(exp["responseTimeLocal"], '%H:%M').time()  # the time of day to send the prompt datetime.datetime.strptime(instructionTime, '%H:%M').time()
         )
-    )
+
+
     # insert each trial into database.
     insert_result = []
     for ix, condition in enumerate(condition_array):
