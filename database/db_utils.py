@@ -393,7 +393,7 @@ def fb_init_trials(fb_id):
         datetime.datetime.combine(  # combine tomorrow's date with the time to send the message
             tomorrowLocal, # tomorrow's date in user's tz
             datetime.datetime.strptime(exp["responseTimeLocal"], '%H:%M').time()  # the time of day to send the prompt datetime.datetime.strptime(instructionTime, '%H:%M').time()
-        )
+        ))
 
 
     # insert each trial into database.
