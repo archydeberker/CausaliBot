@@ -10,7 +10,7 @@ from database import msg
 import datetime
 import requests
 from flask import Flask, request
-
+STAGING = os.getenv('STAGING', False)
 app = Flask(__name__)
 
 
@@ -146,6 +146,12 @@ def webhook():
                                     msg.send_plain_text(fb_id, 
                                         "Hmmm. Please log like this: \"log <something> <value of something>\", such as \"log breakfast eggs and toast\". \
                                         To store a timestamp for an event, use the special word \"time\", for example \"log morning_shower time\"")
+
+                            elif message_text.lower() == 'scheduled' and STAGING is True:
+                                # Run our scheduled jobs
+                                db_utils.fb_send_outstanding_instructions()
+                                db_utils.fb_send_outstanding_response_prompts()
+
                             ##### The next ones test against state of the experiment, so all explicit commands need to go above this line #####
                             elif exp_state in ['instructionTime','responseTime']:
                                 get_next_info(fb_id, message_text)
