@@ -176,7 +176,7 @@ def store_response_attempt(fb_id, hypothesized_rating):
         'fb_id': fb_id, 
         'response_request_sent': True, 
         'response_given': False
-        }).sort('response_date', pymongo.DESCENDING).limit(1))[0]
+        }).sort('response_date', pymongo.DESCENDING).limit(1))
 
     if not most_recent_uncompleted_prompt:  # no uncompleted response prompt
         log("Incorrectly understood response by user as a trial rating")
@@ -184,7 +184,7 @@ def store_response_attempt(fb_id, hypothesized_rating):
         return None
 
     # otherwise store response
-    log("Storing response for user %s for trial %s as rating %d" % (fb_id, most_recent_uncompleted_prompt['hash_sha256'], hypothesized_rating))
+    log("Storing response for user %s for trial %s as rating %d" % (fb_id, most_recent_uncompleted_prompt[0]['hash_sha256'], hypothesized_rating))
     store_response(most_recent_uncompleted_prompt['hash_sha256'], hypothesized_rating)
 
 
