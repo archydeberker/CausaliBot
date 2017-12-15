@@ -185,7 +185,7 @@ def store_response_attempt(fb_id, hypothesized_rating):
 
     # otherwise store response
     log("Storing response for user %s for trial %s as rating %d" % (fb_id, most_recent_uncompleted_prompt[0]['hash_sha256'], hypothesized_rating))
-    store_response(most_recent_uncompleted_prompt['hash_sha256'], hypothesized_rating)
+    store_response(most_recent_uncompleted_prompt[0]['hash_sha256'], hypothesized_rating)
 
 
 def fb_send_outstanding_response_prompts():
